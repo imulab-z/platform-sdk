@@ -22,6 +22,12 @@ const (
 	ScopeOfflineAccess = "offline_access"
 )
 
+// client_type
+const (
+	ClientTypePublic = "public"
+	ClientTypeConfidential = "confidential"
+)
+
 // application_type
 const (
 	AppTypeWeb = "web"
