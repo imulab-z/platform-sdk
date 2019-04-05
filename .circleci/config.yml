@@ -1,0 +1,18 @@
+version: 2
+jobs:
+  build:
+    docker:
+    - image: circleci/golang:1.11.1
+    branches:
+      only:
+      - master
+      - development
+    working_directory: /go/src/github.com/imulab-z/platform-sdk
+    steps:
+    - checkout
+    - run:
+        name: Ensure dependencies
+        command: dep ensure
+    - run:
+        name: Tests
+        command: go test -v ./...
