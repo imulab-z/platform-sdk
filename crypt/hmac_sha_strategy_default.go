@@ -20,7 +20,7 @@ type defaultHmacShaStrategy struct {
 }
 
 func (h *defaultHmacShaStrategy) Generate(entropy uint) (string, string, error) {
-	rawKey, err := randomBytes(entropy)
+	rawKey, err := RandomBytes(entropy)
 	if err != nil {
 		return "", "", err
 	}

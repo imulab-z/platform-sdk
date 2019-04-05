@@ -29,7 +29,7 @@ func (s *HmacShaStrategyTestSuite) createStrategy() HmacShaStrategy {
 		err 		error
 	)
 
-	key, err = randomBytes(s.keyLen)
+	key, err = RandomBytes(s.keyLen)
 	if err != nil {
 		s.FailNow("Cannot generate random key")
 	}

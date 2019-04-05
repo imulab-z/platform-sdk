@@ -6,7 +6,7 @@ import (
 )
 
 // Returns n random bytes.
-func randomBytes(n uint) ([]byte, error) {
+func RandomBytes(n uint) ([]byte, error) {
 	bytes := make([]byte, n)
 	if _, err := io.ReadFull(rand.Reader, bytes); err != nil {
 		return []byte{}, err
