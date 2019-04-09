@@ -194,19 +194,24 @@ type IdTokenHelper struct {
 }
 
 func (h *IdTokenHelper) GenToken(ctx context.Context, req oauth.Request, resp oauth.Response) error {
-	if len(resp.GetString(oauth.RParamAccessToken)) > 0 {
-		client, ok := req.GetClient().(spi.OidcClient)
-		if !ok {
-			panic("must be called with spi.OidcClient")
-		}
+	client, ok := req.GetClient().(spi.OidcClient)
+	if !ok {
+		panic("must be called with spi.OidcClient")
+	}
 
-		sess, ok := req.GetSession().(Session)
-		if !ok {
-			panic("must be called with oidc.Session")
-		}
+	sess, ok := req.GetSession().(Session)
+	if !ok {
+		panic("must be called with oidc.Session")
+	}
 
-		if lmh := h.leftMostHash(resp.GetString(oauth.RParamAccessToken), client.GetIdTokenSignedResponseAlg()); len(lmh) > 0 {
-			sess.GetIdTokenClaims()["at_hash"] = lmh
+	for k, v := range map[string]string{
+		oauth.RParamCode: "c_hash",
+		oauth.RParamAccessToken: "at_hash",
+	} {
+		if len(resp.GetString(k)) > 0 {
+			if lmh := h.leftMostHash(resp.GetString(k), client.GetIdTokenSignedResponseAlg()); len(lmh) > 0 {
+				sess.GetIdTokenClaims()[v] = lmh
+			}
 		}
 	}
 
