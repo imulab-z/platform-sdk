@@ -60,7 +60,7 @@ type RefreshTokenHelper struct {
 	Repo     RefreshTokenRepository
 }
 
-func (h *RefreshTokenHelper) GenToken(ctx context.Context, req Request, resp TokenResponse) error {
+func (h *RefreshTokenHelper) GenToken(ctx context.Context, req Request, resp Response) error {
 	if tok, err := h.Strategy.NewToken(ctx, req); err != nil {
 		return err
 	} else {
@@ -74,7 +74,7 @@ func (h *RefreshTokenHelper) GenToken(ctx context.Context, req Request, resp Tok
 				}).Errorln("failed to save refresh token.")
 			}
 		}()
-		resp.SetRefreshToken(tok)
+		resp.Set(RParamRefreshToken, tok)
 		return nil
 	}
 }

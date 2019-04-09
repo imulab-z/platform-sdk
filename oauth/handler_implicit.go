@@ -10,7 +10,7 @@ type ImplicitHandler struct {
 	AccessTokenHelper 	*AccessTokenHelper
 }
 
-func (h *ImplicitHandler) Authorize(ctx context.Context, req AuthorizeRequest, resp AuthorizeResponse) error {
+func (h *ImplicitHandler) Authorize(ctx context.Context, req AuthorizeRequest, resp Response) error {
 	if !h.supportsAuthorizeRequest(req) {
 		return nil
 	}
@@ -21,7 +21,7 @@ func (h *ImplicitHandler) Authorize(ctx context.Context, req AuthorizeRequest, r
 		return spi.ErrInvalidGrant("client is incapable of implicit grant.")
 	}
 
-	return h.AccessTokenHelper.GenToken2(ctx, req, resp)
+	return h.AccessTokenHelper.GenToken(ctx, req, resp)
 }
 
 func (h *ImplicitHandler) supportsAuthorizeRequest(req AuthorizeRequest) bool {

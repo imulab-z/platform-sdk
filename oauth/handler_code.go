@@ -15,7 +15,7 @@ type AuthorizeCodeHandler struct {
 	RefreshTokenHelper	*RefreshTokenHelper
 }
 
-func (h *AuthorizeCodeHandler) Authorize(ctx context.Context, req AuthorizeRequest, resp AuthorizeResponse) error {
+func (h *AuthorizeCodeHandler) Authorize(ctx context.Context, req AuthorizeRequest, resp Response) error {
 	if !h.supportsAuthorizeRequest(req) {
 		return nil
 	}
@@ -37,13 +37,13 @@ func (h *AuthorizeCodeHandler) Authorize(ctx context.Context, req AuthorizeReque
 	} else if err := h.CodeRepo.Save(ctx, code, req); err != nil {
 		return err
 	} else {
-		resp.SetCode(code)
+		resp.Set(RParamCode, code)
 	}
 
 	if len(req.GetRedirectUri()) == 0 {
-		resp.SetRedirectUri(req.GetClient().GetRedirectUris()[0])
+		resp.Set(RParamRedirectUri, req.GetClient().GetRedirectUris()[0])
 	} else {
-		resp.SetRedirectUri(req.GetRedirectUri())
+		resp.Set(RParamRedirectUri, req.GetRedirectUri())
 	}
 
 	return nil
@@ -83,7 +83,7 @@ func (h *AuthorizeCodeHandler) UpdateSession(ctx context.Context, req TokenReque
 	return nil
 }
 
-func (h *AuthorizeCodeHandler) IssueToken(ctx context.Context, req TokenRequest, resp TokenResponse) error {
+func (h *AuthorizeCodeHandler) IssueToken(ctx context.Context, req TokenRequest, resp Response) error {
 	if !h.supportsTokenRequest(req) {
 		return nil
 	}

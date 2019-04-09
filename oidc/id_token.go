@@ -193,34 +193,8 @@ type IdTokenHelper struct {
 	Strategy IdTokenStrategy
 }
 
-func (h *IdTokenHelper) GenToken(ctx context.Context, req oauth.Request, resp oauth.TokenResponse) error {
-	if !isOidcTokenResponse(resp) {
-		panic("must be oidc.TokenResponse")
-	}
-
-	return h.gen(ctx, req, func() string {
-		return resp.GetAccessToken()
-	}, func(idTok string) {
-		resp.(TokenResponse).SetIdToken(idTok)
-	})
-}
-
-func (h *IdTokenHelper) GenToken2(ctx context.Context, req oauth.Request, resp oauth.AuthorizeResponse) error {
-	return h.gen(ctx, req, func() string {
-		if tok, ok := resp.GetExtra()["access_token"].(string); !ok {
-			return ""
-		} else {
-			return tok
-		}
-	}, func(idTok string) {
-		resp.GetExtra()["id_token"] = idTok
-	})
-}
-
-func (h *IdTokenHelper) gen(ctx context.Context, req oauth.Request, getAccessToken func() string, cb func(idTok string)) error {
-	accessToken := getAccessToken()
-
-	if len(accessToken) > 0 {
+func (h *IdTokenHelper) GenToken(ctx context.Context, req oauth.Request, resp oauth.Response) error {
+	if len(resp.GetString(oauth.RParamAccessToken)) > 0 {
 		client, ok := req.GetClient().(spi.OidcClient)
 		if !ok {
 			panic("must be called with spi.OidcClient")
@@ -231,7 +205,7 @@ func (h *IdTokenHelper) gen(ctx context.Context, req oauth.Request, getAccessTok
 			panic("must be called with oidc.Session")
 		}
 
-		if lmh := h.leftMostHash(accessToken, client.GetIdTokenSignedResponseAlg()); len(lmh) > 0 {
+		if lmh := h.leftMostHash(resp.GetString(oauth.RParamAccessToken), client.GetIdTokenSignedResponseAlg()); len(lmh) > 0 {
 			sess.GetIdTokenClaims()["at_hash"] = lmh
 		}
 	}
@@ -239,7 +213,7 @@ func (h *IdTokenHelper) gen(ctx context.Context, req oauth.Request, getAccessTok
 	if tok, err := h.Strategy.NewToken(ctx, req); err != nil {
 		return err
 	} else {
-		cb(tok)
+		resp.Set(RParamIdToken, tok)
 	}
 
 	return nil

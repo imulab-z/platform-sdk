@@ -117,7 +117,7 @@ type AccessTokenHelper struct {
 	Lifespan time.Duration
 }
 
-func (h *AccessTokenHelper) gen(ctx context.Context, req Request, cb func(tok, tokTyp string, exp int64)) error {
+func (h *AccessTokenHelper) GenToken(ctx context.Context, req Request, resp Response) error {
 	if tok, err := h.Strategy.NewToken(ctx, req); err != nil {
 		return err
 	} else {
@@ -131,23 +131,9 @@ func (h *AccessTokenHelper) gen(ctx context.Context, req Request, cb func(tok, t
 				}).Errorln("failed to save access token.")
 			}
 		}()
-		cb(tok, "Bearer", h.Lifespan.Nanoseconds() / int64(time.Second))
+		resp.Set(RParamAccessToken, tok)
+		resp.Set(RParamTokenType, "Bearer")
+		resp.Set(RParamExpiresIn, h.Lifespan.Nanoseconds() / int64(time.Second))
 		return nil
 	}
-}
-
-func (h *AccessTokenHelper) GenToken2(ctx context.Context, req Request, resp AuthorizeResponse) error {
-	return h.gen(ctx, req, func(tok, tokTyp string, exp int64) {
-		resp.GetExtra()["access_token"] = tok
-		resp.GetExtra()["token_type"] = tokTyp
-		resp.GetExtra()["expires_in"] = exp
-	})
-}
-
-func (h *AccessTokenHelper) GenToken(ctx context.Context, req Request, resp TokenResponse) error {
-	return h.gen(ctx, req, func(tok, tokTyp string, exp int64) {
-		resp.SetAccessToken(tok)
-		resp.SetTokenType(tokTyp)
-		resp.SetExpiresIn(exp)
-	})
 }

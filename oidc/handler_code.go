@@ -16,7 +16,7 @@ type AuthorizeCodeHandler struct {
 	IdTokenHelper	*IdTokenHelper
 }
 
-func (h *AuthorizeCodeHandler) Authorize(ctx context.Context, req oauth.AuthorizeRequest, resp oauth.AuthorizeResponse) error {
+func (h *AuthorizeCodeHandler) Authorize(ctx context.Context, req oauth.AuthorizeRequest, resp oauth.Response) error {
 	if !h.supportsAuthorizeRequest(req) {
 		return nil
 	}
@@ -41,13 +41,9 @@ func (h *AuthorizeCodeHandler) UpdateSession(ctx context.Context, req oauth.Toke
 	return h.AuthorizeCodeHandler.UpdateSession(ctx, req)
 }
 
-func (h *AuthorizeCodeHandler) IssueToken(ctx context.Context, req oauth.TokenRequest, resp oauth.TokenResponse) error {
+func (h *AuthorizeCodeHandler) IssueToken(ctx context.Context, req oauth.TokenRequest, resp oauth.Response) error {
 	if !h.supportsTokenRequest(req) {
 		return nil
-	}
-
-	if !isOidcTokenResponse(resp) {
-		panic("this handler must be supplied an oidc.TokenResponse")
 	}
 
 	// delegate majority of work to authorize code handler

@@ -45,13 +45,13 @@ func (s *AuthorizeCodeHandlerTestSuite) TestAuthorize() {
 	req.SetRedirectUri(client.GetRedirectUris()[0])
 	req.SetState("12345")
 
-	resp := NewAuthorizeResponse()
+	resp := NewResponse()
 
 	err := s.h.Authorize(context.Background(), req, resp)
 	s.Assert().Nil(err)
 
-	s.Assert().NotEmpty(resp.GetCode())
-	s.Assert().Equal(client.GetRedirectUris()[0], resp.GetRedirectUri())
+	s.Assert().NotEmpty(resp.GetString(RParamCode))
+	s.Assert().Equal(client.GetRedirectUris()[0], resp.GetString(RParamRedirectUri))
 }
 
 type noOpAuthorizeCodeRepository struct {}

@@ -12,7 +12,7 @@ type ImplicitHandler struct {
 	IdTokenHelper     *IdTokenHelper
 }
 
-func (h *ImplicitHandler) Authorize(ctx context.Context, req oauth.AuthorizeRequest, resp oauth.AuthorizeResponse) error {
+func (h *ImplicitHandler) Authorize(ctx context.Context, req oauth.AuthorizeRequest, resp oauth.Response) error {
 	if !h.supportsAuthorizeRequest(req) {
 		return nil
 	}
@@ -23,16 +23,15 @@ func (h *ImplicitHandler) Authorize(ctx context.Context, req oauth.AuthorizeRequ
 	}
 
 	// issue access token if necessary
-	if funk.ContainsString(req.GetResponseTypes(), spi.ResponseTypeToken) {
-		if _, ok := resp.GetExtra()["access_token"]; !ok {
-			if err := h.AccessTokenHelper.GenToken2(ctx, req, resp); err != nil {
-				return err
-			}
+	if funk.ContainsString(req.GetResponseTypes(), spi.ResponseTypeToken) &&
+		len(resp.GetString(oauth.RParamAccessToken)) == 0 {
+		if err := h.AccessTokenHelper.GenToken(ctx, req, resp); err != nil {
+			return err
 		}
 		req.HandledResponseType(spi.ResponseTypeToken)
 	}
 
-	if err := h.IdTokenHelper.GenToken2(ctx, req, resp); err != nil {
+	if err := h.IdTokenHelper.GenToken(ctx, req, resp); err != nil {
 		return err
 	}
 
