@@ -18,7 +18,7 @@ const (
 
 // Standard scopes
 const (
-	ScopeOffline       = "offline"
+	ScopeOpenId = "openid"
 	ScopeOfflineAccess = "offline_access"
 )
 

@@ -5,15 +5,15 @@ type AuthorizeRequest interface {
 	// Get requested response types
 	GetResponseTypes() []string
 	// Add response types
-	addResponseTypes(responseTypes ...string)
+	AddResponseTypes(responseTypes ...string)
 	// Get requested scopes
 	GetScopes() []string
 	// Add scopes
-	addScopes(scopes ...string)
+	AddScopes(scopes ...string)
 	// Get the supplied state parameter
 	GetState() string
 	// Set state
-	setState(state string)
+	SetState(state string)
 	// Set the response type to handled
 	HandledResponseType(responseType string)
 	// Returns true if the response type has been handled; false otherwise
@@ -42,7 +42,7 @@ func (r *authorizeRequest) GetResponseTypes() []string {
 	return r.ResponseTypes
 }
 
-func (r *authorizeRequest) addResponseTypes(responseTypes ...string) {
+func (r *authorizeRequest) AddResponseTypes(responseTypes ...string) {
 	r.ResponseTypes = append(r.ResponseTypes, responseTypes...)
 }
 
@@ -50,7 +50,7 @@ func (r *authorizeRequest) GetScopes() []string {
 	return r.Scopes
 }
 
-func (r *authorizeRequest) addScopes(scopes ...string) {
+func (r *authorizeRequest) AddScopes(scopes ...string) {
 	r.Scopes = append(r.Scopes, scopes...)
 }
 
@@ -58,7 +58,7 @@ func (r *authorizeRequest) GetState() string {
 	return r.State
 }
 
-func (r *authorizeRequest) setState(state string) {
+func (r *authorizeRequest) SetState(state string) {
 	r.State = state
 }
 

@@ -5,15 +5,15 @@ type TokenRequest interface {
 	// Get the grant types
 	GetGrantTypes() []string
 	// add grant types to the request
-	addGrantTypes(grantTypes ...string)
+	AddGrantTypes(grantTypes ...string)
 	// Get the supplied authorization code
 	GetCode() string
 	// set the authorize code
-	setCode(code string)
+	SetCode(code string)
 	// Get the supplied refresh token
 	GetRefreshToken() string
 	// set the refresh token
-	setRefreshToken(token string)
+	SetRefreshToken(token string)
 }
 
 func NewTokenRequest() TokenRequest {
@@ -36,7 +36,7 @@ func (r *oauthTokenRequest) GetGrantTypes() []string {
 	return r.GrantTypes
 }
 
-func (r *oauthTokenRequest) addGrantTypes(grantTypes ...string) {
+func (r *oauthTokenRequest) AddGrantTypes(grantTypes ...string) {
 	r.GrantTypes = append(r.GrantTypes, grantTypes...)
 }
 
@@ -44,7 +44,7 @@ func (r *oauthTokenRequest) GetCode() string {
 	return r.Code
 }
 
-func (r *oauthTokenRequest) setCode(code string) {
+func (r *oauthTokenRequest) SetCode(code string) {
 	r.Code = code
 }
 
@@ -52,7 +52,7 @@ func (r *oauthTokenRequest) GetRefreshToken() string {
 	return r.RefreshToken
 }
 
-func (r *oauthTokenRequest) setRefreshToken(token string) {
+func (r *oauthTokenRequest) SetRefreshToken(token string) {
 	r.RefreshToken = token
 }
 

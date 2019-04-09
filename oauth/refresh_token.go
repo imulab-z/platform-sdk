@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/imulab-z/platform-sdk/crypt"
 	"github.com/imulab-z/platform-sdk/spi"
+	"github.com/sirupsen/logrus"
 	"strings"
 )
 
@@ -54,3 +55,26 @@ func (s *hmacShaRefreshTokenStrategy) ValidateToken(ctx context.Context, token s
 	return nil
 }
 
+type RefreshTokenHelper struct {
+	Strategy RefreshTokenStrategy
+	Repo     RefreshTokenRepository
+}
+
+func (h *RefreshTokenHelper) GenToken(ctx context.Context, req Request, resp TokenResponse) error {
+	if tok, err := h.Strategy.NewToken(ctx, req); err != nil {
+		return err
+	} else {
+		go func() {
+			if err := h.Repo.Save(context.Background(), tok, req); err != nil {
+				logrus.WithFields(logrus.Fields{
+					"error": err,
+					"token": tok,
+					"request_id": req.GetId(),
+					"client_id": req.GetClient().GetId(),
+				}).Errorln("failed to save refresh token.")
+			}
+		}()
+		resp.SetRefreshToken(tok)
+		return nil
+	}
+}

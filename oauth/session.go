@@ -5,15 +5,17 @@ type Session interface {
 	// Returns the user subject that authorized this request.
 	GetSubject() string
 	// Sets a new user subject
-	setSubject(subject string)
+	SetSubject(subject string)
 	// Returns user's granted scopes.
 	GetGrantedScopes() []string
 	// Adds new scopes to the granted list
-	addGrantedScopes(scopes ...string)
+	AddGrantedScopes(scopes ...string)
 	// Returns claims to be added in the issued access token.
 	GetAccessClaims() map[string]interface{}
 	// Clone the user session
 	Clone() Session
+	// Merge with another session
+	Merge(another Session)
 }
 
 // Constructs an empty new session.
@@ -32,11 +34,11 @@ type oauthSession struct {
 	Claims 		map[string]interface{}	`json:"claims"`
 }
 
-func (s *oauthSession) setSubject(subject string) {
+func (s *oauthSession) SetSubject(subject string) {
 	s.Subject = subject
 }
 
-func (s *oauthSession) addGrantedScopes(scopes ...string) {
+func (s *oauthSession) AddGrantedScopes(scopes ...string) {
 	s.Scopes = append(s.Scopes, scopes...)
 }
 
@@ -65,5 +67,17 @@ func (s *oauthSession) Clone() Session {
 		Subject: s.Subject,
 		Scopes: grantedScopesCopy,
 		Claims: accessClaimsCopy,
+	}
+}
+
+func (s *oauthSession) Merge(another Session) {
+	if len(s.Subject) == 0 {
+		s.Subject = another.GetSubject()
+	}
+
+	s.AddGrantedScopes(another.GetGrantedScopes()...)
+
+	for k, v := range another.GetAccessClaims() {
+		s.Claims[k] = v
 	}
 }

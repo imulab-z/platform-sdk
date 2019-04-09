@@ -2,9 +2,9 @@ package oauth
 
 import (
 	"context"
-	"crypto/rsa"
 	"github.com/imulab-z/platform-sdk/spi"
 	"github.com/satori/go.uuid"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/square/go-jose.v2"
 	"gopkg.in/square/go-jose.v2/jwt"
 	"time"
@@ -25,16 +25,14 @@ type AccessTokenRepository interface {
 func NewRs256JwtAccessTokenStrategy(
 	issuer string,
 	tokenLifespan time.Duration,
-	privateKey *rsa.PrivateKey,
-	publicKey *rsa.PublicKey,
+	jwks *jose.JSONWebKeySet,
 	keyId string,
 ) AccessTokenStrategy {
 	return &JwtAccessTokenStrategy{
 		Issuer:        issuer,
 		TokenLifespan: tokenLifespan,
 		SigningAlg:    jose.RS256,
-		SigningKey:    privateKey,
-		VerifyingKey:  publicKey,
+		Jwks:          jwks,
 		KeyId:         keyId,
 	}
 }
@@ -43,10 +41,9 @@ type JwtAccessTokenStrategy struct {
 	Issuer        string
 	TokenLifespan time.Duration
 	SigningAlg    jose.SignatureAlgorithm
-	SigningKey    interface{}
-	VerifyingKey  interface{}
-	KeyId         string
-	_signer       jose.Signer
+	Jwks    *jose.JSONWebKeySet
+	KeyId   string
+	_signer jose.Signer
 }
 
 func (s *JwtAccessTokenStrategy) ComputeIdentifier(token string) (string, error) {
@@ -68,7 +65,7 @@ func (s *JwtAccessTokenStrategy) NewToken(ctx context.Context, req Request) (str
 		Claims(&jwt.Claims{
 			ID:        uuid.NewV4().String(),
 			Issuer:    s.Issuer,
-			Subject:   req.GetId(),
+			Subject:   req.GetSession().GetSubject(),
 			Audience:  []string{req.GetClient().GetId()},
 			NotBefore: jwt.NewNumericDate(time.Now()),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -83,7 +80,7 @@ func (s *JwtAccessTokenStrategy) ValidateToken(ctx context.Context, token string
 
 	if tok, err := jwt.ParseSigned(token); err != nil {
 		return err
-	} else if err := tok.Claims(s.VerifyingKey, &out); err != nil {
+	} else if err := tok.Claims(FindVerificationKeyById(s.Jwks, s.KeyId), &out); err != nil {
 		return err
 	} else if err := out.ValidateWithLeeway(jwt.Expected{
 		Issuer:   s.Issuer,
@@ -100,13 +97,11 @@ func (s *JwtAccessTokenStrategy) mustSigner() jose.Signer {
 		return s._signer
 	}
 
-	opt := (&jose.SignerOptions{}).
-		WithType("JWT").
-		WithHeader(jose.HeaderKey("kid"), s.KeyId)
+	opt := (&jose.SignerOptions{}).WithType("JWT")
 
 	if signer, err := jose.NewSigner(jose.SigningKey{
 		Algorithm: s.SigningAlg,
-		Key:       s.SigningKey,
+		Key:       FindSigningKeyById(s.Jwks, s.KeyId),
 	}, opt); err != nil {
 		panic("failed to create jwt signer")
 	} else {
@@ -114,4 +109,31 @@ func (s *JwtAccessTokenStrategy) mustSigner() jose.Signer {
 	}
 
 	return s._signer
+}
+
+type AccessTokenHelper struct {
+	Strategy AccessTokenStrategy
+	Repo     AccessTokenRepository
+	Lifespan time.Duration
+}
+
+func (h *AccessTokenHelper) GenToken(ctx context.Context, req Request, resp TokenResponse) error {
+	if tok, err := h.Strategy.NewToken(ctx, req); err != nil {
+		return err
+	} else {
+		go func() {
+			if err := h.Repo.Save(context.Background(), tok, req); err != nil {
+				logrus.WithFields(logrus.Fields{
+					"error":      err,
+					"token":      tok,
+					"request_id": req.GetId(),
+					"client_id":  req.GetClient().GetId(),
+				}).Errorln("failed to save access token.")
+			}
+		}()
+		resp.SetAccessToken(tok)
+		resp.SetTokenType("Bearer")
+		resp.SetExpiresIn(h.Lifespan.Nanoseconds() / int64(time.Second))
+		return nil
+	}
 }

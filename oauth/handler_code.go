@@ -8,15 +8,16 @@ import (
 )
 
 type AuthorizeCodeHandler struct {
-	ScopeStrategy ScopeStrategy
-	CodeStrategy  AuthorizeCodeStrategy
-	CodeRepo      AuthorizeCodeRepository
-	Next          AuthorizeHandler
+	ScopeStrategy 		ScopeStrategy
+	CodeStrategy  		AuthorizeCodeStrategy
+	CodeRepo      		AuthorizeCodeRepository
+	AccessTokenHelper	*AccessTokenHelper
+	RefreshTokenHelper	*RefreshTokenHelper
 }
 
-func (h *AuthorizeCodeHandler) Handle(ctx context.Context, req AuthorizeRequest, resp AuthorizeResponse) error {
-	if !h.supported(req) {
-		goto next
+func (h *AuthorizeCodeHandler) Authorize(ctx context.Context, req AuthorizeRequest, resp AuthorizeResponse) error {
+	if !h.supportsAuthorizeRequest(req) {
+		return nil
 	}
 
 	if !funk.ContainsString(req.GetClient().GetResponseTypes(), spi.ResponseTypeCode) {
@@ -43,13 +44,61 @@ func (h *AuthorizeCodeHandler) Handle(ctx context.Context, req AuthorizeRequest,
 		resp.SetRedirectUri(req.GetRedirectUri())
 	}
 
-next:
-	if h.Next != nil {
-		return h.Next.Handle(ctx, req, resp)
-	}
 	return nil
 }
 
-func (h *AuthorizeCodeHandler) supported(req AuthorizeRequest) bool {
+func (h *AuthorizeCodeHandler) supportsAuthorizeRequest(req AuthorizeRequest) bool {
 	return funk.ContainsString(req.GetResponseTypes(), spi.ResponseTypeCode)
+}
+
+func (h *AuthorizeCodeHandler) UpdateSession(ctx context.Context, req TokenRequest) error {
+	if !h.supportsTokenRequest(req) {
+		return nil
+	}
+
+	authorizeReq, err := h.CodeRepo.GetRequest(ctx, req.GetCode())
+	if err != nil {
+		return err
+	} else if err := h.CodeStrategy.ValidateCode(ctx, req.GetCode(), authorizeReq); err != nil {
+		return err
+	}
+
+	// this code exists and should be invalidated after a single use no matter what the condition is for security.
+	// in most cases, not blocking the call will not cause an issue.
+	defer func() {
+		go h.CodeRepo.Delete(context.Background(), req.GetCode())
+	}()
+
+	if req.GetClient().GetId() != authorizeReq.GetClient().GetId() {
+		return spi.ErrUnauthorizedClient("client is not authorized to use this authorization code.")
+	} else if req.GetRedirectUri() != authorizeReq.GetRedirectUri() {
+		// note: code repository must return the effective redirect_uri as req.GetRedirectUri()
+		return spi.ErrUnauthorizedClient("authorization code was issued to a different redirect uri.")
+	}
+
+	req.GetSession().Merge(authorizeReq.GetSession())
+
+	return nil
+}
+
+func (h *AuthorizeCodeHandler) IssueToken(ctx context.Context, req TokenRequest, resp TokenResponse) error {
+	if !h.supportsTokenRequest(req) {
+		return nil
+	}
+
+	if err := h.AccessTokenHelper.GenToken(ctx, req, resp); err != nil {
+		return err
+	}
+
+	if funk.ContainsString(req.GetSession().GetGrantedScopes(), spi.ScopeOfflineAccess) {
+		if err := h.RefreshTokenHelper.GenToken(ctx, req, resp); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (h *AuthorizeCodeHandler) supportsTokenRequest(req TokenRequest) bool {
+	return Exactly(req.GetGrantTypes(), spi.GrantTypeCode)
 }

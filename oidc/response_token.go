@@ -1,29 +1,19 @@
-package oauth
+package oidc
+
+import "github.com/imulab-z/platform-sdk/oauth"
 
 type TokenResponse interface {
-	// Returns the assigned access token
-	GetAccessToken() string
-	// Sets the assigned access token
-	SetAccessToken(token string)
-	// Returns the type of the token
-	GetTokenType() string
-	// Sets the type of the token
-	SetTokenType(tokenType string)
-	// Returns the expires_in parameter
-	GetExpiresIn() int64
-	// Sets the expires_in parameter
-	SetExpiresIn(ttl int64)
-	// Returns the assigned refresh token
-	GetRefreshToken() string
-	// Sets the assigned refresh token
-	SetRefreshToken(token string)
+	oauth.TokenResponse
+	GetIdToken() string
+	SetIdToken(token string)
 }
 
 func NewTokenResponse() TokenResponse {
 	return &tokenResponse{
 		AccessToken: "",
-		TokenType: "Bearer",
+		TokenType: "",
 		ExpiresIn: 0,
+		IdToken: "",
 		RefreshToken: "",
 	}
 }
@@ -33,6 +23,15 @@ type tokenResponse struct {
 	TokenType 		string
 	ExpiresIn 		int64
 	RefreshToken	string
+	IdToken			string
+}
+
+func (r *tokenResponse) GetIdToken() string {
+	return r.IdToken
+}
+
+func (r *tokenResponse) SetIdToken(token string) {
+	r.IdToken = token
 }
 
 func (r *tokenResponse) GetAccessToken() string {
@@ -65,4 +64,9 @@ func (r *tokenResponse) GetRefreshToken() string {
 
 func (r *tokenResponse) SetRefreshToken(token string) {
 	r.RefreshToken = token
+}
+
+func isOidcTokenResponse(resp oauth.TokenResponse) bool {
+	_, ok := resp.(TokenResponse)
+	return ok
 }

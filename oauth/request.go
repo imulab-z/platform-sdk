@@ -11,23 +11,23 @@ type Request interface {
 	// Returns the id of the request
 	GetId()	string
 	// Set the id
-	setId(id string)
+	SetId(id string)
 	// Returns the request timestamp
 	GetTimestamp() time.Time
 	// Set timestamp
-	setTimestamp(timestamp int64)
+	SetTimestamp(timestamp int64)
 	// Returns the client for this request
 	GetClient() spi.OAuthClient
 	// Set client
-	setClient(client spi.OAuthClient)
+	SetClient(client spi.OAuthClient)
 	// Returns the requested redirect uri
 	GetRedirectUri() string
 	// Set redirect uri
-	setRedirectUri(uri string)
+	SetRedirectUri(uri string)
 	// Returns the session
 	GetSession() Session
 	// Set session
-	setSession(session Session)
+	SetSession(session Session)
 }
 
 // Constructs a new default request object with id and timestamp set.
@@ -53,7 +53,7 @@ func (r *oauthRequest) GetId() string {
 	return r.Id
 }
 
-func (r *oauthRequest) setId(id string) {
+func (r *oauthRequest) SetId(id string) {
 	r.Id = id
 }
 
@@ -61,7 +61,7 @@ func (r *oauthRequest) GetTimestamp() time.Time {
 	return time.Unix(r.Timestamp, 0)
 }
 
-func (r *oauthRequest) setTimestamp(timestamp int64) {
+func (r *oauthRequest) SetTimestamp(timestamp int64) {
 	r.Timestamp = timestamp
 }
 
@@ -69,7 +69,7 @@ func (r *oauthRequest) GetClient() spi.OAuthClient {
 	return r.Client
 }
 
-func (r *oauthRequest) setClient(client spi.OAuthClient) {
+func (r *oauthRequest) SetClient(client spi.OAuthClient) {
 	r.Client = client
 }
 
@@ -77,7 +77,7 @@ func (r *oauthRequest) GetRedirectUri() string {
 	return r.RedirectUri
 }
 
-func (r *oauthRequest) setRedirectUri(uri string) {
+func (r *oauthRequest) SetRedirectUri(uri string) {
 	r.RedirectUri = uri
 }
 
@@ -85,6 +85,6 @@ func (r *oauthRequest) GetSession() Session {
 	return r.Session
 }
 
-func (r *oauthRequest) setSession(session Session) {
+func (r *oauthRequest) SetSession(session Session) {
 	r.Session = session
 }

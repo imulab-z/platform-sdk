@@ -36,18 +36,18 @@ func (s *AuthorizeCodeHandlerTestSuite) SetupTest() {
 	}
 }
 
-func (s *AuthorizeCodeHandlerTestSuite) TestHandle() {
+func (s *AuthorizeCodeHandlerTestSuite) TestAuthorize() {
 	client := new(test.MockClient)
 
 	req := NewAuthorizeRequest()
-	req.addResponseTypes(spi.ResponseTypeCode)
-	req.setClient(client)
-	req.setRedirectUri(client.GetRedirectUris()[0])
-	req.setState("12345")
+	req.AddResponseTypes(spi.ResponseTypeCode)
+	req.SetClient(client)
+	req.SetRedirectUri(client.GetRedirectUris()[0])
+	req.SetState("12345")
 
 	resp := NewAuthorizeResponse()
 
-	err := s.h.Handle(context.Background(), req, resp)
+	err := s.h.Authorize(context.Background(), req, resp)
 	s.Assert().Nil(err)
 
 	s.Assert().NotEmpty(resp.GetCode())
@@ -56,7 +56,7 @@ func (s *AuthorizeCodeHandlerTestSuite) TestHandle() {
 
 type noOpAuthorizeCodeRepository struct {}
 
-func (_ *noOpAuthorizeCodeRepository) GetSession(ctx context.Context, code string) (Session, error) {
+func (_ *noOpAuthorizeCodeRepository) GetRequest(ctx context.Context, code string) (AuthorizeRequest, error) {
 	return nil, nil
 }
 

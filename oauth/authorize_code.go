@@ -17,10 +17,13 @@ type AuthorizeCodeStrategy interface {
 }
 
 type AuthorizeCodeRepository interface {
-	// Find the associated session with the authorization code
-	GetSession(ctx context.Context, code string) (Session, error)
+	// Find the associated request with the authorization code
+	// The returned authorize request must have client_id, the effective redirect_uri
+	// and session set.
+	GetRequest(ctx context.Context, code string) (AuthorizeRequest, error)
 	// Interface for managing persistence of authorization code
 	// Persist the authorize code and associate it with the request session
+	// client_id and the effective redirect_uri along with the session must be persisted
 	Save(ctx context.Context, code string, req AuthorizeRequest) error
 	// Remove the authorize code from persistence
 	Delete(ctx context.Context, code string) error

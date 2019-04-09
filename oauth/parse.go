@@ -71,9 +71,9 @@ func (p *httpRequestParser) parseAuthorizeRequest(ctx context.Context, values ur
 		}
 	}()
 
-	req.addResponseTypes(strings.Split(values.Get(spi.ParamResponseType), " ")...)
-	req.addScopes(strings.Split(values.Get(spi.ParamScope), " ")...)
-	req.setState(values.Get(spi.ParamState))
+	req.AddResponseTypes(strings.Split(values.Get(spi.ParamResponseType), " ")...)
+	req.AddScopes(strings.Split(values.Get(spi.ParamScope), " ")...)
+	req.SetState(values.Get(spi.ParamState))
 
 	select {
 	case <-ctx.Done():
@@ -81,13 +81,13 @@ func (p *httpRequestParser) parseAuthorizeRequest(ctx context.Context, values ur
 	case err := <-errChan:
 		return err
 	case c := <-clientChan:
-		req.setClient(c)
+		req.SetClient(c)
 	}
 
 	if uri, err := SelectRedirectUri(values.Get(spi.ParamRedirectUri), req.GetClient().GetRedirectUris()); err != nil {
 		return err
 	} else {
-		req.setRedirectUri(uri)
+		req.SetRedirectUri(uri)
 	}
 
 	return nil

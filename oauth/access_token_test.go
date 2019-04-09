@@ -6,6 +6,7 @@ import (
 	"crypto/rsa"
 	"github.com/imulab-z/platform-sdk/test"
 	"github.com/stretchr/testify/suite"
+	"gopkg.in/square/go-jose.v2"
 	"testing"
 	"time"
 )
@@ -24,19 +25,29 @@ func (s *JwtAccessTokenStrategyTestSuite) SetupTest() {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	s.Assert().Nil(err)
 
+	jwks := &jose.JSONWebKeySet{
+		Keys: []jose.JSONWebKey{
+			{
+				Key: privateKey,
+				Algorithm: string(jose.RS256),
+				Use: "sign",
+				KeyID: "test-key",
+			},
+		},
+	}
+
 	s.strategy = NewRs256JwtAccessTokenStrategy(
 		"test",
 		30*time.Minute,
-		privateKey,
-		privateKey.Public().(*rsa.PublicKey),
+		jwks,
 		"test-key",
 	).(*JwtAccessTokenStrategy)
 }
 
 func (s *JwtAccessTokenStrategyTestSuite) TestNewToken() {
 	req := NewAuthorizeRequest()
-	req.setClient(new(test.MockClient))
-	req.setSession(NewSession())
+	req.SetClient(new(test.MockClient))
+	req.SetSession(NewSession())
 
 	tok, err := s.strategy.NewToken(context.Background(), req)
 	s.Assert().Nil(err)
@@ -45,8 +56,8 @@ func (s *JwtAccessTokenStrategyTestSuite) TestNewToken() {
 
 func (s *JwtAccessTokenStrategyTestSuite) TestValidate() {
 	req := NewAuthorizeRequest()
-	req.setClient(new(test.MockClient))
-	req.setSession(NewSession())
+	req.SetClient(new(test.MockClient))
+	req.SetSession(NewSession())
 
 	tok, _ := s.strategy.NewToken(context.Background(), req)
 	err := s.strategy.ValidateToken(context.Background(), tok, req)
@@ -55,8 +66,8 @@ func (s *JwtAccessTokenStrategyTestSuite) TestValidate() {
 
 func (s *JwtAccessTokenStrategyTestSuite) TestComputeIdentifier() {
 	req := NewAuthorizeRequest()
-	req.setClient(new(test.MockClient))
-	req.setSession(NewSession())
+	req.SetClient(new(test.MockClient))
+	req.SetSession(NewSession())
 	tok, _ := s.strategy.NewToken(context.Background(), req)
 
 	id, err := s.strategy.ComputeIdentifier(tok)
