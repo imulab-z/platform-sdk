@@ -198,7 +198,29 @@ func (h *IdTokenHelper) GenToken(ctx context.Context, req oauth.Request, resp oa
 		panic("must be oidc.TokenResponse")
 	}
 
-	if len(resp.GetAccessToken()) > 0 {
+	return h.gen(ctx, req, func() string {
+		return resp.GetAccessToken()
+	}, func(idTok string) {
+		resp.(TokenResponse).SetIdToken(idTok)
+	})
+}
+
+func (h *IdTokenHelper) GenToken2(ctx context.Context, req oauth.Request, resp oauth.AuthorizeResponse) error {
+	return h.gen(ctx, req, func() string {
+		if tok, ok := resp.GetExtra()["access_token"].(string); !ok {
+			return ""
+		} else {
+			return tok
+		}
+	}, func(idTok string) {
+		resp.GetExtra()["id_token"] = idTok
+	})
+}
+
+func (h *IdTokenHelper) gen(ctx context.Context, req oauth.Request, getAccessToken func() string, cb func(idTok string)) error {
+	accessToken := getAccessToken()
+
+	if len(accessToken) > 0 {
 		client, ok := req.GetClient().(spi.OidcClient)
 		if !ok {
 			panic("must be called with spi.OidcClient")
@@ -209,7 +231,7 @@ func (h *IdTokenHelper) GenToken(ctx context.Context, req oauth.Request, resp oa
 			panic("must be called with oidc.Session")
 		}
 
-		if lmh := h.leftMostHash(resp.GetAccessToken(), client.GetIdTokenSignedResponseAlg()); len(lmh) > 0 {
+		if lmh := h.leftMostHash(accessToken, client.GetIdTokenSignedResponseAlg()); len(lmh) > 0 {
 			sess.GetIdTokenClaims()["at_hash"] = lmh
 		}
 	}
@@ -217,7 +239,7 @@ func (h *IdTokenHelper) GenToken(ctx context.Context, req oauth.Request, resp oa
 	if tok, err := h.Strategy.NewToken(ctx, req); err != nil {
 		return err
 	} else {
-		resp.(TokenResponse).SetIdToken(tok)
+		cb(tok)
 	}
 
 	return nil

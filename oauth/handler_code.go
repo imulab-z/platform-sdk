@@ -20,6 +20,8 @@ func (h *AuthorizeCodeHandler) Authorize(ctx context.Context, req AuthorizeReque
 		return nil
 	}
 
+	defer req.HandledResponseType(spi.ResponseTypeCode)
+
 	if !funk.ContainsString(req.GetClient().GetResponseTypes(), spi.ResponseTypeCode) {
 		return spi.ErrUnauthorizedClient(fmt.Sprintf("client disabled response_type=%s", spi.ResponseTypeCode))
 	} else if !funk.ContainsString(req.GetClient().GetGrantTypes(), spi.GrantTypeCode) {

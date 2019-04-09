@@ -21,6 +21,8 @@ func (h *AuthorizeCodeHandler) Authorize(ctx context.Context, req oauth.Authoriz
 		return nil
 	}
 
+	defer req.HandledResponseType(spi.ResponseTypeCode)
+
 	// delegate all the work here assuming the AuthorizeCodeRepository#Save implementation
 	// saves the oidc session as well.
 	return h.AuthorizeCodeHandler.Authorize(ctx, req, resp)

@@ -9,18 +9,22 @@ type AuthorizeResponse interface {
 	GetRedirectUri() string
 	// Set the confirmed redirection uri
 	SetRedirectUri(uri string)
+	// Returns the extra parameters set (for implicit flow)
+	GetExtra() map[string]interface{}
 }
 
 func NewAuthorizeResponse() AuthorizeResponse {
 	return &authorizeResponse{
 		Code: "",
 		RedirectUri: "",
+		Extra: make(map[string]interface{}),
 	}
 }
 
 type authorizeResponse struct {
 	Code 			string
 	RedirectUri		string
+	Extra			map[string]interface{}
 }
 
 func (r *authorizeResponse) GetCode() string {
@@ -39,5 +43,8 @@ func (r *authorizeResponse) SetRedirectUri(uri string) {
 	r.RedirectUri = uri
 }
 
+func (r *authorizeResponse) GetExtra() map[string]interface{} {
+	return r.Extra
+}
 
 
