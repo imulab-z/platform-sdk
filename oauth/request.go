@@ -24,6 +24,10 @@ type Request interface {
 	GetRedirectUri() string
 	// Set redirect uri
 	SetRedirectUri(uri string)
+	// Get the requested scopes
+	GetScopes() []string
+	// Set the requested scopes
+	AddScopes(scopes ...string)
 	// Returns the session
 	GetSession() Session
 	// Set session
@@ -37,6 +41,7 @@ func NewRequest() Request {
 		Timestamp: time.Now().Unix(),
 		RedirectUri: "",
 		Client: nil,
+		Scopes: make([]string, 0),
 		Session: NewSession(),
 	}
 }
@@ -46,6 +51,7 @@ type oauthRequest struct {
 	Timestamp	int64				`json:"timestamp"`
 	Client 		spi.OAuthClient		`json:"client"`
 	RedirectUri	string				`json:"redirect_uri"`
+	Scopes		[]string			`json:"scopes"`
 	Session 	Session				`json:"session"`
 }
 
@@ -55,6 +61,14 @@ func (r *oauthRequest) GetId() string {
 
 func (r *oauthRequest) SetId(id string) {
 	r.Id = id
+}
+
+func (r *oauthRequest) GetScopes() []string {
+	return r.Scopes
+}
+
+func (r *oauthRequest) AddScopes(scopes ...string) {
+	r.Scopes = append(r.Scopes, scopes...)
 }
 
 func (r *oauthRequest) GetTimestamp() time.Time {

@@ -13,6 +13,7 @@ func NewRequest() oauth.Request {
 		Timestamp: time.Now().Unix(),
 		RedirectUri: "",
 		Client: nil,
+		Scopes: make([]string, 0),
 		OidcSession: NewSession(),
 	}
 }
@@ -22,6 +23,7 @@ type oidcRequest struct {
 	Timestamp   int64          `json:"timestamp"`
 	Client      spi.OidcClient `json:"client"`
 	RedirectUri string         `json:"redirect_uri"`
+	Scopes 		[]string 		`json:"scopes"`
 	OidcSession Session        `json:"session"`
 }
 
@@ -31,6 +33,14 @@ func (r *oidcRequest) GetId() string {
 
 func (r *oidcRequest) SetId(id string) {
 	r.Id = id
+}
+
+func (r *oidcRequest) GetScopes() []string {
+	return r.Scopes
+}
+
+func (r *oidcRequest) AddScopes(scopes ...string) {
+	r.Scopes = append(r.Scopes, scopes...)
 }
 
 func (r *oidcRequest) GetTimestamp() time.Time {

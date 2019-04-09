@@ -6,10 +6,6 @@ type AuthorizeRequest interface {
 	GetResponseTypes() []string
 	// Add response types
 	AddResponseTypes(responseTypes ...string)
-	// Get requested scopes
-	GetScopes() []string
-	// Add scopes
-	AddScopes(scopes ...string)
 	// Get the supplied state parameter
 	GetState() string
 	// Set state
@@ -24,7 +20,6 @@ func NewAuthorizeRequest() AuthorizeRequest {
 	return &authorizeRequest{
 		oauthRequest: NewRequest().(*oauthRequest),
 		ResponseTypes: make([]string, 0),
-		Scopes: make([]string, 0),
 		State: "",
 		handleMap: make(map[string]struct{}),
 	}
@@ -33,7 +28,6 @@ func NewAuthorizeRequest() AuthorizeRequest {
 type authorizeRequest struct {
 	*oauthRequest
 	ResponseTypes []string				`json:"response_types"`
-	Scopes        []string				`json:"scopes"`
 	State         string				`json:"state"`
 	handleMap     map[string]struct{}	`json:"-"`
 }
@@ -44,14 +38,6 @@ func (r *authorizeRequest) GetResponseTypes() []string {
 
 func (r *authorizeRequest) AddResponseTypes(responseTypes ...string) {
 	r.ResponseTypes = append(r.ResponseTypes, responseTypes...)
-}
-
-func (r *authorizeRequest) GetScopes() []string {
-	return r.Scopes
-}
-
-func (r *authorizeRequest) AddScopes(scopes ...string) {
-	r.Scopes = append(r.Scopes, scopes...)
 }
 
 func (r *authorizeRequest) GetState() string {
