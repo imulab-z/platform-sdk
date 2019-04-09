@@ -26,6 +26,7 @@ func NewSession() Session {
 		ObfSubject: "",
 		AuthTime: 0,
 		Nonce: "",
+		LastReqId: "",
 		AcrValues: make([]string, 0),
 		IdTokenClaims: make(map[string]interface{}),
 	}
@@ -40,6 +41,15 @@ type oidcSession struct {
 	Nonce			string					`json:"nonce"`
 	AcrValues		[]string				`json:"acr_values"`
 	IdTokenClaims	map[string]interface{}	`json:"id_token_claims"`
+	LastReqId		string					`json:"-"`
+}
+
+func (s *oidcSession) GetLastRequestId() string {
+	return s.LastReqId
+}
+
+func (s *oidcSession) SetLastRequestId(id string) {
+	s.LastReqId = id
 }
 
 func (s *oidcSession) Clone() oauth.Session {

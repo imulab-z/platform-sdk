@@ -16,8 +16,9 @@ type RefreshTokenStrategy interface {
 
 type RefreshTokenRepository interface {
 	Save(ctx context.Context, token string, req Request) error
-	GetSession(ctx context.Context, token string) (Session, error)
+	GetRequest(ctx context.Context, token string) (Request, error)
 	Delete(ctx context.Context, token string) error
+	DeleteByRequestId(ctx context.Context, requestId string) error
 }
 
 func NewHmacShaRefreshTokenStrategy(entropy uint, hmac crypt.HmacShaStrategy) RefreshTokenStrategy {

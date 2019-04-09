@@ -6,6 +6,10 @@ type Session interface {
 	GetSubject() string
 	// Sets a new user subject
 	SetSubject(subject string)
+	// Returns the request id associated with the last request
+	GetLastRequestId() string
+	// Sets the request id for the last request (used in updating session)
+	SetLastRequestId(id string)
 	// Returns user's granted scopes.
 	GetGrantedScopes() []string
 	// Adds new scopes to the granted list
@@ -22,6 +26,7 @@ type Session interface {
 func NewSession() Session {
 	return &oauthSession{
 		Subject: "",
+		LastReqId: "",
 		Scopes: make([]string, 0),
 		Claims: make(map[string]interface{}),
 	}
@@ -32,6 +37,15 @@ type oauthSession struct {
 	Subject 	string					`json:"subject"`
 	Scopes		[]string				`json:"granted_scopes"`
 	Claims 		map[string]interface{}	`json:"claims"`
+	LastReqId	string					`json:"-"`
+}
+
+func (s *oauthSession) GetLastRequestId() string {
+	return s.LastReqId
+}
+
+func (s *oauthSession) SetLastRequestId(id string) {
+	s.LastReqId = id
 }
 
 func (s *oauthSession) SetSubject(subject string) {

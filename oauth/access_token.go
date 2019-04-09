@@ -18,8 +18,9 @@ type AccessTokenStrategy interface {
 
 type AccessTokenRepository interface {
 	Save(ctx context.Context, token string, req Request) error
-	GetSession(ctx context.Context, token string) (Session, error)
+	GetRequest(ctx context.Context, token string) (Request, error)
 	Delete(ctx context.Context, token string) error
+	DeleteByRequestId(ctx context.Context, requestId string) error
 }
 
 func NewRs256JwtAccessTokenStrategy(
