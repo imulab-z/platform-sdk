@@ -13,3 +13,11 @@ func RandomBytes(n uint) ([]byte, error) {
 	}
 	return bytes, nil
 }
+
+func MustRandomBytes(n uint) ([]byte) {
+	if b, err := RandomBytes(n); err != nil {
+		panic(err)
+	} else {
+		return b
+	}
+}

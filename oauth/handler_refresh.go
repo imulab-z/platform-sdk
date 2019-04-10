@@ -3,6 +3,7 @@ package oauth
 import (
 	"context"
 	"github.com/imulab-z/platform-sdk/spi"
+	"github.com/thoas/go-funk"
 	"sync"
 )
 
@@ -19,13 +20,17 @@ func (h *RefreshHandler) UpdateSession(ctx context.Context, req TokenRequest) er
 		return nil
 	}
 
+	if !funk.ContainsString(req.GetClient().GetGrantTypes(), spi.GrantTypeRefresh) {
+		return spi.ErrInvalidGrant("client not capable of using refresh_token grants.")
+	}
+
 	if err := h.RefreshTokenStrategy.ValidateToken(ctx, req.GetRefreshToken(), req); err != nil {
 		return err
-	} else if req, err := h.RefreshTokenRepo.GetRequest(ctx, req.GetRefreshToken()); err != nil {
+	} else if oldReq, err := h.RefreshTokenRepo.GetRequest(ctx, req.GetRefreshToken()); err != nil {
 		return err
 	} else {
-		req.GetSession().SetLastRequestId(req.GetId())
-		req.GetSession().Merge(req.GetSession())
+		req.GetSession().SetLastRequestId(oldReq.GetId())
+		req.GetSession().Merge(oldReq.GetSession())
 	}
 
 	return nil
@@ -88,6 +93,8 @@ func (h *RefreshHandler) IssueToken(ctx context.Context, req TokenRequest, resp 
 	if err := h.RefreshTokenHelper.GenToken(ctx, req, resp); err != nil {
 		return err
 	}
+
+	resp.Set(RedirectUri, req.GetRedirectUri())
 
 	return nil
 }

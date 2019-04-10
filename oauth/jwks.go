@@ -1,8 +1,6 @@
 package oauth
 
 import (
-	"crypto/rand"
-	"crypto/rsa"
 	"gopkg.in/square/go-jose.v2"
 )
 
@@ -75,20 +73,3 @@ func FindEncryptionKeyByAlg(jwks *jose.JSONWebKeySet, alg string) *jose.JSONWebK
 	return nil
 }
 
-func MustNewJwksWithRsaKeyForSigning(kid string) *jose.JSONWebKeySet {
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
-	if err != nil {
-		panic(err)
-	}
-
-	return &jose.JSONWebKeySet{
-		Keys: []jose.JSONWebKey{
-			{
-				Key: privateKey,
-				Algorithm: string(jose.RS256),
-				Use: "sign",
-				KeyID: kid,
-			},
-		},
-	}
-}
