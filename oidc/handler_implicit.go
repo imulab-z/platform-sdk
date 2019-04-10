@@ -24,7 +24,7 @@ func (h *ImplicitHandler) Authorize(ctx context.Context, req oauth.AuthorizeRequ
 
 	// issue access token if necessary
 	if funk.ContainsString(req.GetResponseTypes(), spi.ResponseTypeToken) &&
-		len(resp.GetString(oauth.RParamAccessToken)) == 0 {
+		len(resp.GetString(oauth.AccessToken)) == 0 {
 		if err := h.AccessTokenHelper.GenToken(ctx, req, resp); err != nil {
 			return err
 		}

@@ -205,8 +205,8 @@ func (h *IdTokenHelper) GenToken(ctx context.Context, req oauth.Request, resp oa
 	}
 
 	for k, v := range map[string]string{
-		oauth.RParamCode: "c_hash",
-		oauth.RParamAccessToken: "at_hash",
+		oauth.Code:        "c_hash",
+		oauth.AccessToken: "at_hash",
 	} {
 		if len(resp.GetString(k)) > 0 {
 			if lmh := h.leftMostHash(resp.GetString(k), client.GetIdTokenSignedResponseAlg()); len(lmh) > 0 {

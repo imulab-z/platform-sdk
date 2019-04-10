@@ -15,13 +15,19 @@ func (h *ImplicitHandler) Authorize(ctx context.Context, req AuthorizeRequest, r
 		return nil
 	}
 
-	defer req.HandledResponseType(spi.ResponseTypeToken)
-
 	if !funk.ContainsString(req.GetClient().GetGrantTypes(), spi.GrantTypeImplicit) {
 		return spi.ErrInvalidGrant("client is incapable of implicit grant.")
 	}
 
-	return h.AccessTokenHelper.GenToken(ctx, req, resp)
+	if err := h.AccessTokenHelper.GenToken(ctx, req, resp); err != nil {
+		return err
+	}
+
+	resp.Set(RedirectUri, req.GetRedirectUri())
+
+	req.HandledResponseType(spi.ResponseTypeToken)
+
+	return nil
 }
 
 func (h *ImplicitHandler) supportsAuthorizeRequest(req AuthorizeRequest) bool {

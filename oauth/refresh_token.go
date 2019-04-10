@@ -75,7 +75,7 @@ func (h *RefreshTokenHelper) GenToken(ctx context.Context, req Request, resp Res
 				}).Errorln("failed to save refresh token.")
 			}
 		}()
-		resp.Set(RParamRefreshToken, tok)
+		resp.Set(RefreshToken, tok)
 		return nil
 	}
 }

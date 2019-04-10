@@ -37,14 +37,10 @@ func (h *AuthorizeCodeHandler) Authorize(ctx context.Context, req AuthorizeReque
 	} else if err := h.CodeRepo.Save(ctx, code, req); err != nil {
 		return err
 	} else {
-		resp.Set(RParamCode, code)
+		resp.Set(Code, code)
 	}
 
-	if len(req.GetRedirectUri()) == 0 {
-		resp.Set(RParamRedirectUri, req.GetClient().GetRedirectUris()[0])
-	} else {
-		resp.Set(RParamRedirectUri, req.GetRedirectUri())
-	}
+	resp.Set(RedirectUri, req.GetRedirectUri())
 
 	return nil
 }

@@ -62,18 +62,25 @@ func (s *JwtAccessTokenStrategy) ComputeIdentifier(token string) (string, error)
 }
 
 func (s *JwtAccessTokenStrategy) NewToken(ctx context.Context, req Request) (string, error) {
-	return jwt.Signed(s.mustSigner()).
-		Claims(&jwt.Claims{
-			ID:        uuid.NewV4().String(),
-			Issuer:    s.Issuer,
-			Subject:   req.GetSession().GetSubject(),
-			Audience:  []string{req.GetClient().GetId()},
-			NotBefore: jwt.NewNumericDate(time.Now()),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			Expiry:    jwt.NewNumericDate(time.Now().Add(s.TokenLifespan)),
-		}).
-		Claims(req.GetSession().GetAccessClaims()).
-		CompactSerialize()
+	b := jwt.Signed(s.mustSigner())
+	b = b.Claims(&jwt.Claims{
+		ID:        uuid.NewV4().String(),
+		Issuer:    s.Issuer,
+		Subject:   req.GetSession().GetSubject(),
+		Audience:  []string{req.GetClient().GetId()},
+		NotBefore: jwt.NewNumericDate(time.Now()),
+		IssuedAt:  jwt.NewNumericDate(time.Now()),
+		Expiry:    jwt.NewNumericDate(time.Now().Add(s.TokenLifespan)),
+	})
+	if len(req.GetSession().GetGrantedScopes()) > 0 {
+		b = b.Claims(map[string]interface{}{
+			"scopes": req.GetSession().GetGrantedScopes(),
+		})
+	}
+	if len(req.GetSession().GetAccessClaims()) > 0 {
+		b = b.Claims(req.GetSession().GetAccessClaims())
+	}
+	return b.CompactSerialize()
 }
 
 func (s *JwtAccessTokenStrategy) ValidateToken(ctx context.Context, token string, req Request) error {
@@ -132,9 +139,9 @@ func (h *AccessTokenHelper) GenToken(ctx context.Context, req Request, resp Resp
 				}).Errorln("failed to save access token.")
 			}
 		}()
-		resp.Set(RParamAccessToken, tok)
-		resp.Set(RParamTokenType, "Bearer")
-		resp.Set(RParamExpiresIn, h.Lifespan.Nanoseconds() / int64(time.Second))
+		resp.Set(AccessToken, tok)
+		resp.Set(TokenType, "Bearer")
+		resp.Set(ExpiresIn, h.Lifespan.Nanoseconds() / int64(time.Second))
 		return nil
 	}
 }

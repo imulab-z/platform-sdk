@@ -1,12 +1,12 @@
 package oauth
 
 const (
-	RParamCode = "code"
-	RParamRedirectUri = "redirect_uri"
-	RParamAccessToken = "access_token"
-	RParamTokenType = "token_type"
-	RParamExpiresIn = "expires_in"
-	RParamRefreshToken = "refresh_token"
+	Code         = "code"
+	RedirectUri  = "redirect_uri"
+	AccessToken  = "access_token"
+	TokenType    = "token_type"
+	ExpiresIn    = "expires_in"
+	RefreshToken = "refresh_token"
 )
 
 type Response map[string]interface{}
