@@ -7,6 +7,9 @@ import (
 
 var (
 	ErrClientRejectScope = spi.ErrInvalidScope("one or more scope is not granted by the client.")
+	EqualityComparator = Comparator(func(a, b string) bool {
+		return a == b
+	})
 )
 
 type ScopeStrategy interface {

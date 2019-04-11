@@ -20,7 +20,6 @@ type AuthorizeCodeHandlerTestSuite struct {
 }
 
 func (s *AuthorizeCodeHandlerTestSuite) SetupTest() {
-	scopeStrategy := NewEqualScopeStrategy()
 	codeRepo := &noOpAuthorizeCodeRepository{}
 
 	signingKey, err := crypt.RandomBytes(32)
@@ -32,7 +31,7 @@ func (s *AuthorizeCodeHandlerTestSuite) SetupTest() {
 	s.h = &AuthorizeCodeHandler{
 		CodeRepo: codeRepo,
 		CodeStrategy: codeStrategy,
-		ScopeStrategy: scopeStrategy,
+		ScopeComparator: EqualityComparator,
 	}
 }
 

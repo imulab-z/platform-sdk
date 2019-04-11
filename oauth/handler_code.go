@@ -8,45 +8,69 @@ import (
 )
 
 type AuthorizeCodeHandler struct {
-	ScopeStrategy 		ScopeStrategy
-	CodeStrategy  		AuthorizeCodeStrategy
-	CodeRepo      		AuthorizeCodeRepository
-	AccessTokenHelper	*AccessTokenHelper
-	RefreshTokenHelper	*RefreshTokenHelper
+	ScopeComparator    Comparator
+	CodeStrategy       AuthorizeCodeStrategy
+	CodeRepo           AuthorizeCodeRepository
+	AccessTokenHelper  *AccessTokenHelper
+	RefreshTokenHelper *RefreshTokenHelper
 }
 
 func (h *AuthorizeCodeHandler) Authorize(ctx context.Context, req AuthorizeRequest, resp Response) error {
+	var (
+		code string
+		err  error
+	)
+
 	if !h.supportsAuthorizeRequest(req) {
 		return nil
 	}
 
-	defer req.HandledResponseType(spi.ResponseTypeCode)
-
-	if !funk.ContainsString(req.GetClient().GetResponseTypes(), spi.ResponseTypeCode) {
-		return spi.ErrUnauthorizedClient(fmt.Sprintf("client disabled response_type=%s", spi.ResponseTypeCode))
-	} else if !funk.ContainsString(req.GetClient().GetGrantTypes(), spi.GrantTypeCode) {
-		return spi.ErrUnauthorizedClient(fmt.Sprintf("client disabled grant_type=%s", spi.GrantTypeCode))
-	}
-
-	if !h.ScopeStrategy.AcceptsAll(req.GetClient(), req.GetSession().GetGrantedScopes()) {
-		return ErrClientRejectScope
-	}
-
-	if code, err := h.CodeStrategy.NewCode(ctx, req); err != nil {
+	err = h.checkAuthorizePrerequisite(req)
+	if err != nil {
 		return err
-	} else if err := h.CodeRepo.Save(ctx, code, req); err != nil {
-		return err
-	} else {
-		resp.Set(Code, code)
 	}
 
+	code, err = h.issueCode(ctx, req)
+	if err != nil {
+		return err
+	}
+
+	resp.Set(Code, code)
 	resp.Set(RedirectUri, req.GetRedirectUri())
+
+	req.HandledResponseType(spi.ResponseTypeCode)
 
 	return nil
 }
 
+// Returns nil if the given request is fit to be authorized; returns an error otherwise.
+// A request can be authorized if the requesting client registered 'code' as response_type and accepts all of the
+// granted scopes in the request session.
+func (h *AuthorizeCodeHandler) checkAuthorizePrerequisite(req AuthorizeRequest) error {
+	if !ClientRegisteredResponseType(req.GetClient(), spi.ResponseTypeCode) {
+		return spi.ErrUnauthorizedClient(fmt.Sprintf("client disabled response_type=%s", spi.ResponseTypeCode))
+	}
+
+	if !ClientAcceptsGrantedScopes(req, h.ScopeComparator) {
+		return ErrClientRejectScope
+	}
+
+	return nil
+}
+
+// Returns the newly generated and saved authorization code if no error; otherwise returns empty string and the error.
+func (h *AuthorizeCodeHandler) issueCode(ctx context.Context, req AuthorizeRequest) (string, error) {
+	if code, err := h.CodeStrategy.NewCode(ctx, req); err != nil {
+		return "", err
+	} else if err := h.CodeRepo.Save(ctx, code, req); err != nil {
+		return "", err
+	} else {
+		return code, nil
+	}
+}
+
 func (h *AuthorizeCodeHandler) supportsAuthorizeRequest(req AuthorizeRequest) bool {
-	return funk.ContainsString(req.GetResponseTypes(), spi.ResponseTypeCode)
+	return V(req.GetResponseTypes()).Contains(spi.ResponseTypeCode)
 }
 
 func (h *AuthorizeCodeHandler) UpdateSession(ctx context.Context, req TokenRequest) error {
@@ -54,27 +78,18 @@ func (h *AuthorizeCodeHandler) UpdateSession(ctx context.Context, req TokenReque
 		return nil
 	}
 
-	authorizeReq, err := h.CodeRepo.GetRequest(ctx, req.GetCode())
-	if err != nil {
-		return err
-	} else if err := h.CodeStrategy.ValidateCode(ctx, req.GetCode(), authorizeReq); err != nil {
-		return err
-	}
-
-	// this code exists and should be invalidated after a single use no matter what the condition is for security.
-	// in most cases, not blocking the call will not cause an issue.
+	// for security purposes, the requested code shall be deleted after a single use, either by
+	// the authorized client or by a malicious party.
 	defer func() {
 		go h.CodeRepo.Delete(context.Background(), req.GetCode())
 	}()
 
-	if req.GetClient().GetId() != authorizeReq.GetClient().GetId() {
-		return spi.ErrUnauthorizedClient("client is not authorized to use this authorization code.")
-	} else if req.GetRedirectUri() != authorizeReq.GetRedirectUri() {
-		// note: code repository must return the effective redirect_uri as req.GetRedirectUri()
-		return spi.ErrUnauthorizedClient("authorization code was issued to a different redirect uri.")
+	if oldReq, err := h.reviveCode(ctx, req); err != nil {
+		return err
+	} else {
+		req.GetSession().SetLastRequestId(oldReq.GetId())
+		req.GetSession().Merge(oldReq.GetSession())
 	}
-
-	req.GetSession().Merge(authorizeReq.GetSession())
 
 	return nil
 }
@@ -97,6 +112,40 @@ func (h *AuthorizeCodeHandler) IssueToken(ctx context.Context, req TokenRequest,
 	return nil
 }
 
+// Returns the issuing authorization request associated with the given authorization code, if any; otherwise, returns
+// a non-nil error when code is malformed, missing or is being illegally used.
+func (h *AuthorizeCodeHandler) reviveCode(ctx context.Context, req TokenRequest) (Request, error) {
+	var (
+		oldReq 	AuthorizeRequest
+		err 	error
+	)
+
+	if !ClientRegisteredGrantType(req.GetClient(), spi.GrantTypeCode) {
+		return nil, spi.ErrInvalidGrant("client unable to use authorization_code grant type.")
+	}
+
+	oldReq, err = h.CodeRepo.GetRequest(ctx, req.GetCode())
+	if err != nil {
+		return nil, err
+	}
+
+	err = h.CodeStrategy.ValidateCode(ctx, req.GetCode(), oldReq)
+	if err != nil {
+		return nil, err
+	}
+
+	if req.GetClient().GetId() != oldReq.GetClient().GetId() {
+		return nil, spi.ErrUnauthorizedClient("client is not authorized to use this authorization code.")
+	}
+
+	if req.GetRedirectUri() != oldReq.GetRedirectUri() {
+		// note: code repository must return the effective redirect_uri as req.GetRedirectUri()
+		return nil, spi.ErrUnauthorizedClient("authorization code was issued to a different redirect uri.")
+	}
+
+	return oldReq, nil
+}
+
 func (h *AuthorizeCodeHandler) supportsTokenRequest(req TokenRequest) bool {
-	return Exactly(req.GetGrantTypes(), spi.GrantTypeCode)
+	return V(req.GetGrantTypes()).ContainsExactly(spi.GrantTypeCode)
 }
