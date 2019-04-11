@@ -18,10 +18,15 @@ func (v V) Contains(elements ...string) bool {
 
 func (v V) ContainsByComparator(elements []string, comparator Comparator) bool {
 	for _, oneElement := range elements {
+		var containsThisElement bool
 		for _, oneValue := range v {
-			if contains := comparator(oneValue, oneElement); !contains {
-				return false
+			containsThisElement = comparator(oneValue, oneElement)
+			if containsThisElement {
+				break
 			}
+		}
+		if !containsThisElement {
+			return false
 		}
 	}
 	return true
