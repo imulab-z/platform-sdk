@@ -67,7 +67,6 @@ func (s *RefreshHandlerTestSuite) TestRefreshToken() {
 	s.Assert().True(resp.Get(ExpiresIn).(int64) > 0)
 	s.Assert().NotEmpty(resp.GetString(RefreshToken))
 	s.Assert().NotEmpty(resp.GetString(AccessToken))
-	s.Assert().Equal("https://test.org/callback", resp.GetString(RedirectUri))
 }
 
 // support: AccessTokenRepository

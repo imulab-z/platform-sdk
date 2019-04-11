@@ -83,7 +83,7 @@ func (h *AuthorizeCodeHandler) UpdateSession(ctx context.Context, req TokenReque
 		go h.CodeRepo.Delete(context.Background(), req.GetCode())
 	}()
 
-	if oldReq, err := h.reviveCode(ctx, req); err != nil {
+	if oldReq, err := h.reviveAuthorizeRequest(ctx, req); err != nil {
 		return err
 	} else {
 		req.GetSession().SetLastRequestId(oldReq.GetId())
@@ -113,7 +113,7 @@ func (h *AuthorizeCodeHandler) IssueToken(ctx context.Context, req TokenRequest,
 
 // Returns the issuing authorization request associated with the given authorization code, if any; otherwise, returns
 // a non-nil error when code is malformed, missing or is being illegally used.
-func (h *AuthorizeCodeHandler) reviveCode(ctx context.Context, req TokenRequest) (Request, error) {
+func (h *AuthorizeCodeHandler) reviveAuthorizeRequest(ctx context.Context, req TokenRequest) (Request, error) {
 	var (
 		oldReq 	AuthorizeRequest
 		err 	error
