@@ -50,7 +50,6 @@ func (s *AuthorizeCodeHandlerTestSuite) TestAuthorize() {
 	s.Assert().Nil(err)
 
 	s.Assert().NotEmpty(resp.GetString(Code))
-	s.Assert().Equal(client.GetRedirectUris()[0], resp.GetString(RedirectUri))
 }
 
 type noOpAuthorizeCodeRepository struct {}

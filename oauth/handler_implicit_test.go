@@ -50,7 +50,6 @@ func (s *ImplicitHandlerTestSuite) TestAuthorize() {
 	s.Assert().NotEmpty(resp.GetString(AccessToken))
 	s.Assert().Equal("Bearer", resp.GetString(TokenType))
 	s.Assert().True(resp.Get(ExpiresIn).(int64) > 0)
-	s.Assert().Equal("https://test.org/callback", resp.GetString(RedirectUri))
 }
 
 type implicitHandlerTestSuiteRepo struct {

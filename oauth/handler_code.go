@@ -36,7 +36,6 @@ func (h *AuthorizeCodeHandler) Authorize(ctx context.Context, req AuthorizeReque
 	}
 
 	resp.Set(Code, code)
-	resp.Set(RedirectUri, req.GetRedirectUri())
 
 	req.HandledResponseType(spi.ResponseTypeCode)
 

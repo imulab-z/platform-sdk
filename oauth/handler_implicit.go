@@ -3,7 +3,6 @@ package oauth
 import (
 	"context"
 	"github.com/imulab-z/platform-sdk/spi"
-	"github.com/thoas/go-funk"
 )
 
 type ImplicitHandler struct {
@@ -15,7 +14,7 @@ func (h *ImplicitHandler) Authorize(ctx context.Context, req AuthorizeRequest, r
 		return nil
 	}
 
-	if !funk.ContainsString(req.GetClient().GetGrantTypes(), spi.GrantTypeImplicit) {
+	if !ClientRegisteredGrantType(req.GetClient(), spi.GrantTypeImplicit) {
 		return spi.ErrInvalidGrant("client is incapable of implicit grant.")
 	}
 
@@ -23,14 +22,12 @@ func (h *ImplicitHandler) Authorize(ctx context.Context, req AuthorizeRequest, r
 		return err
 	}
 
-	resp.Set(RedirectUri, req.GetRedirectUri())
-
 	req.HandledResponseType(spi.ResponseTypeToken)
 
 	return nil
 }
 
 func (h *ImplicitHandler) supportsAuthorizeRequest(req AuthorizeRequest) bool {
-	return Exactly(req.GetResponseTypes(), spi.ResponseTypeToken)
+	return V(req.GetResponseTypes()).ContainsExactly(spi.ResponseTypeToken)
 }
 
