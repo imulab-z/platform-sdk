@@ -21,7 +21,7 @@ type ClientCredentialsHandlerTestSuite struct {
 func (s *ClientCredentialsHandlerTestSuite) SetupTest() {
 	kid := "F4CC1518-A591-49E3-AEBD-0E71E1CA95B5"
 	s.h = &ClientCredentialsHandler{
-		ScopeStrategy: NewEqualScopeStrategy(),
+		ScopeComparator: EqualityComparator,
 		AccessTokenHelper: &AccessTokenHelper{
 			Repo: &clientCredentialsHandlerTestSuiteAccessTokenRepo{},
 			Strategy: NewRs256JwtAccessTokenStrategy(
@@ -56,7 +56,6 @@ func (s *ClientCredentialsHandlerTestSuite) TestIssueToken() {
 
 	s.Assert().NotEmpty(resp.GetString(AccessToken))
 	s.Assert().True(resp.Get(ExpiresIn).(int64) > 0)
-	s.Assert().Equal("https://test.org/callback", resp.GetString(RedirectUri))
 	s.Assert().Equal("Bearer", resp.GetString(TokenType))
 }
 

@@ -1,8 +1,10 @@
 package oauth
 
 import (
+	"context"
 	"github.com/imulab-z/platform-sdk/spi"
 	"github.com/thoas/go-funk"
+	"sync"
 )
 
 // todo phase out
@@ -19,6 +21,23 @@ func Exactly(array []string, elements ...string) bool {
 	return true
 }
 
+// internal helper method to perform a error-capable action asynchronously
+func doAsync(ctx context.Context, wg *sync.WaitGroup, errChan chan error, action func() error) {
+	go func() {
+		defer wg.Done()
+		if err := action(); err != nil {
+			select {
+			case <-ctx.Done():
+				return
+			case errChan <- err:
+				return
+			default:
+				return
+			}
+		}
+	}()
+}
+
 // Returns true when the registered scopes of the client associated with the request accepts all the granted scopes
 // within the request session; false otherwise.
 // Comparison is made based on the supplied comparator, when nil, defaults to EqualityComparator.
@@ -27,6 +46,16 @@ func ClientAcceptsGrantedScopes(req Request, comparator Comparator) bool {
 		comparator = EqualityComparator
 	}
 	return V(req.GetClient().GetScopes()).ContainsByComparator(req.GetSession().GetGrantedScopes(), comparator)
+}
+
+// Returns true when the registered scopes of the client associated with the request accepts all requested scopes.
+// Otherwise returns false.
+// Comparison is made based on the supplied comparator, when nil, defaults to EqualityComparator.
+func ClientAcceptsScopes(req Request, comparator Comparator) bool {
+	if comparator == nil {
+		comparator = EqualityComparator
+	}
+	return V(req.GetClient().GetScopes()).ContainsByComparator(req.GetScopes(), comparator)
 }
 
 // Returns true when the client's registered response types contains the queried response type; false otherwise.

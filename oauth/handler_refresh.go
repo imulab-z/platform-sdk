@@ -79,10 +79,10 @@ func (h *RefreshHandler) deleteOldTokens(ctx context.Context, req TokenRequest) 
 
 	wg := new(sync.WaitGroup)
 	wg.Add(2)
-	h.doAsync(ctx, wg, errChan, func() error {
+	doAsync(ctx, wg, errChan, func() error {
 		return h.AccessTokenRepo.DeleteByRequestId(ctx, req.GetSession().GetLastRequestId())
 	})
-	h.doAsync(ctx, wg, errChan, func() error {
+	doAsync(ctx, wg, errChan, func() error {
 		return h.RefreshTokenRepo.DeleteByRequestId(ctx, req.GetSession().GetLastRequestId())
 	})
 	wg.Wait()
@@ -105,10 +105,10 @@ func (h *RefreshHandler) issueNewTokens(ctx context.Context, req TokenRequest, r
 
 	wg := new(sync.WaitGroup)
 	wg.Add(2)
-	h.doAsync(ctx, wg, errChan, func() error {
+	doAsync(ctx, wg, errChan, func() error {
 		return h.AccessTokenHelper.GenToken(ctx, req, resp)
 	})
-	h.doAsync(ctx, wg, errChan, func() error {
+	doAsync(ctx, wg, errChan, func() error {
 		return h.RefreshTokenHelper.GenToken(ctx, req, resp)
 	})
 	wg.Wait()
@@ -125,21 +125,4 @@ func (h *RefreshHandler) issueNewTokens(ctx context.Context, req TokenRequest, r
 
 func (h *RefreshHandler) supportsTokenRequest(req TokenRequest) bool {
 	return V(req.GetGrantTypes()).ContainsExactly(spi.GrantTypeRefresh)
-}
-
-// Internal helper method to execute an error-capable action asynchronously.
-func (_ *RefreshHandler) doAsync(ctx context.Context, wg *sync.WaitGroup, errChan chan error, action func() error) {
-	go func() {
-		defer wg.Done()
-		if err := action(); err != nil {
-			select {
-			case <-ctx.Done():
-				return
-			case errChan <- err:
-				return
-			default:
-				return
-			}
-		}
-	}()
 }
