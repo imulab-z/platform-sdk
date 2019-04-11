@@ -19,6 +19,8 @@ func (h *ClientCredentialsHandler) UpdateSession(ctx context.Context, req TokenR
 
 	if req.GetClient().GetType() == spi.ClientTypePublic {
 		return spi.ErrInvalidClient("public client cannot use client_credentials flow.", "")
+	} else if !funk.ContainsString(req.GetClient().GetGrantTypes(), spi.GrantTypeClient) {
+		return spi.ErrInvalidGrant("client unable to use client_credentials grant.")
 	}
 
 	if !h.ScopeStrategy.AcceptsAll(req.GetClient(), req.GetScopes()) {
@@ -45,6 +47,8 @@ func (h *ClientCredentialsHandler) IssueToken(ctx context.Context, req TokenRequ
 			return err
 		}
 	}
+
+	resp.Set(RedirectUri, req.GetRedirectUri())
 
 	return nil
 }
