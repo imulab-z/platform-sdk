@@ -1,5 +1,5 @@
 package oidc
 
 const (
-	RParamIdToken = "id_token"
+	IdToken = "id_token"
 )

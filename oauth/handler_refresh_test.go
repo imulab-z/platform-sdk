@@ -71,7 +71,7 @@ func (s *RefreshHandlerTestSuite) TestRefreshToken() {
 
 // support: AccessTokenRepository
 type refreshHandlerTestSuiteAccessTokenRepo struct {
-	*noOpAccessTokenRepo
+	*NoOpAccessTokenRepo
 }
 
 func (r *refreshHandlerTestSuiteAccessTokenRepo) DeleteByRequestId(ctx context.Context, requestId string) error {
@@ -81,7 +81,7 @@ func (r *refreshHandlerTestSuiteAccessTokenRepo) DeleteByRequestId(ctx context.C
 
 // support: RefreshTokenRepository
 type refreshHandlerTestSuiteRefreshTokenRepo struct {
-	*noOpRefreshTokenRepo
+	*NoOpRefreshTokenRepo
 }
 
 func (r *refreshHandlerTestSuiteRefreshTokenRepo) GetRequest(ctx context.Context, token string) (Request, error) {

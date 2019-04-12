@@ -60,11 +60,11 @@ func (s *ClientCredentialsHandlerTestSuite) TestIssueToken() {
 }
 
 type clientCredentialsHandlerTestSuiteAccessTokenRepo struct {
-	*noOpAccessTokenRepo
+	*NoOpAccessTokenRepo
 }
 
 type clientCredentialsHandlerTestSuiteRefreshTokenRepo struct {
-	*noOpRefreshTokenRepo
+	*NoOpRefreshTokenRepo
 }
 
 type clientCredentialsHandlerTestSuiteClient struct {

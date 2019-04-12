@@ -10,46 +10,46 @@ import (
 )
 
 var (
-	_ AccessTokenRepository = (*noOpAccessTokenRepo)(nil)
-	_ RefreshTokenRepository = (*noOpRefreshTokenRepo)(nil)
+	_ AccessTokenRepository = (*NoOpAccessTokenRepo)(nil)
+	_ RefreshTokenRepository = (*NoOpRefreshTokenRepo)(nil)
 	_ spi.OAuthClient = (*panicClient)(nil)
 )
 
 // AccessTokenRepository no-operation implementation
-type noOpAccessTokenRepo struct {}
+type NoOpAccessTokenRepo struct {}
 
-func (r *noOpAccessTokenRepo) Save(ctx context.Context, token string, req Request) error {
+func (r *NoOpAccessTokenRepo) Save(ctx context.Context, token string, req Request) error {
 	return nil
 }
 
-func (r *noOpAccessTokenRepo) GetRequest(ctx context.Context, token string) (Request, error) {
+func (r *NoOpAccessTokenRepo) GetRequest(ctx context.Context, token string) (Request, error) {
 	return nil, nil
 }
 
-func (r *noOpAccessTokenRepo) Delete(ctx context.Context, token string) error {
+func (r *NoOpAccessTokenRepo) Delete(ctx context.Context, token string) error {
 	return nil
 }
 
-func (r *noOpAccessTokenRepo) DeleteByRequestId(ctx context.Context, requestId string) error {
+func (r *NoOpAccessTokenRepo) DeleteByRequestId(ctx context.Context, requestId string) error {
 	return nil
 }
 
 // RefreshTokenRepository no-operation implementation
-type noOpRefreshTokenRepo struct {}
+type NoOpRefreshTokenRepo struct {}
 
-func (r *noOpRefreshTokenRepo) Save(ctx context.Context, token string, req Request) error {
+func (r *NoOpRefreshTokenRepo) Save(ctx context.Context, token string, req Request) error {
 	return nil
 }
 
-func (r *noOpRefreshTokenRepo) GetRequest(ctx context.Context, token string) (Request, error) {
+func (r *NoOpRefreshTokenRepo) GetRequest(ctx context.Context, token string) (Request, error) {
 	return nil, nil
 }
 
-func (r *noOpRefreshTokenRepo) Delete(ctx context.Context, token string) error {
+func (r *NoOpRefreshTokenRepo) Delete(ctx context.Context, token string) error {
 	return nil
 }
 
-func (r *noOpRefreshTokenRepo) DeleteByRequestId(ctx context.Context, requestId string) error {
+func (r *NoOpRefreshTokenRepo) DeleteByRequestId(ctx context.Context, requestId string) error {
 	return nil
 }
 

@@ -15,7 +15,7 @@ type RefreshHandler struct {
 }
 
 func (h *RefreshHandler) UpdateSession(ctx context.Context, req TokenRequest) error {
-	if !h.supportsTokenRequest(req) {
+	if !h.SupportsTokenRequest(req) {
 		return nil
 	}
 
@@ -56,7 +56,7 @@ func (h *RefreshHandler) reviveAuthorizeRequest(ctx context.Context, req TokenRe
 }
 
 func (h *RefreshHandler) IssueToken(ctx context.Context, req TokenRequest, resp Response) error {
-	if !h.supportsTokenRequest(req) {
+	if !h.SupportsTokenRequest(req) {
 		return nil
 	}
 
@@ -123,6 +123,6 @@ func (h *RefreshHandler) issueNewTokens(ctx context.Context, req TokenRequest, r
 	}
 }
 
-func (h *RefreshHandler) supportsTokenRequest(req TokenRequest) bool {
+func (h *RefreshHandler) SupportsTokenRequest(req TokenRequest) bool {
 	return V(req.GetGrantTypes()).ContainsExactly(spi.GrantTypeRefresh)
 }

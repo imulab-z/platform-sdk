@@ -13,7 +13,7 @@ type ClientCredentialsHandler struct {
 }
 
 func (h *ClientCredentialsHandler) UpdateSession(ctx context.Context, req TokenRequest) error {
-	if !h.supportsTokenRequest(req) {
+	if !h.SupportsTokenRequest(req) {
 		return nil
 	}
 
@@ -47,7 +47,7 @@ func (h *ClientCredentialsHandler) checkClientCapability(req TokenRequest) error
 }
 
 func (h *ClientCredentialsHandler) IssueToken(ctx context.Context, req TokenRequest, resp Response) error {
-	if !h.supportsTokenRequest(req) {
+	if !h.SupportsTokenRequest(req) {
 		return nil
 	}
 
@@ -78,6 +78,6 @@ func (h *ClientCredentialsHandler) IssueToken(ctx context.Context, req TokenRequ
 	}
 }
 
-func (h *ClientCredentialsHandler) supportsTokenRequest(req TokenRequest) bool {
-	return Exactly(req.GetGrantTypes(), spi.GrantTypeClient)
+func (h *ClientCredentialsHandler) SupportsTokenRequest(req TokenRequest) bool {
+	return V(req.GetGrantTypes()).ContainsExactly(spi.GrantTypeClient)
 }

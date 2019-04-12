@@ -21,7 +21,7 @@ func (h *AuthorizeCodeHandler) Authorize(ctx context.Context, req AuthorizeReque
 		err  error
 	)
 
-	if !h.supportsAuthorizeRequest(req) {
+	if !h.SupportsAuthorizeRequest(req) {
 		return nil
 	}
 
@@ -68,12 +68,12 @@ func (h *AuthorizeCodeHandler) issueCode(ctx context.Context, req AuthorizeReque
 	}
 }
 
-func (h *AuthorizeCodeHandler) supportsAuthorizeRequest(req AuthorizeRequest) bool {
+func (h *AuthorizeCodeHandler) SupportsAuthorizeRequest(req AuthorizeRequest) bool {
 	return V(req.GetResponseTypes()).Contains(spi.ResponseTypeCode)
 }
 
 func (h *AuthorizeCodeHandler) UpdateSession(ctx context.Context, req TokenRequest) error {
-	if !h.supportsTokenRequest(req) {
+	if !h.SupportsTokenRequest(req) {
 		return nil
 	}
 
@@ -94,7 +94,7 @@ func (h *AuthorizeCodeHandler) UpdateSession(ctx context.Context, req TokenReque
 }
 
 func (h *AuthorizeCodeHandler) IssueToken(ctx context.Context, req TokenRequest, resp Response) error {
-	if !h.supportsTokenRequest(req) {
+	if !h.SupportsTokenRequest(req) {
 		return nil
 	}
 
@@ -145,6 +145,6 @@ func (h *AuthorizeCodeHandler) reviveAuthorizeRequest(ctx context.Context, req T
 	return oldReq, nil
 }
 
-func (h *AuthorizeCodeHandler) supportsTokenRequest(req TokenRequest) bool {
+func (h *AuthorizeCodeHandler) SupportsTokenRequest(req TokenRequest) bool {
 	return V(req.GetGrantTypes()).ContainsExactly(spi.GrantTypeCode)
 }

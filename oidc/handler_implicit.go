@@ -40,7 +40,7 @@ func (h *ImplicitHandler) Authorize(ctx context.Context, req oauth.AuthorizeRequ
 }
 
 func (h *ImplicitHandler) supportsAuthorizeRequest(req oauth.AuthorizeRequest) bool {
-	return isOidcSession(req.GetSession()) &&
+	return IsOidcSession(req.GetSession()) &&
 		funk.ContainsString(req.GetSession().GetGrantedScopes(), spi.ScopeOpenId) &&
 		(oauth.Exactly(req.GetResponseTypes(), spi.ResponseTypeIdToken) ||
 			oauth.Exactly(req.GetResponseTypes(), spi.ResponseTypeToken, spi.ResponseTypeIdToken))

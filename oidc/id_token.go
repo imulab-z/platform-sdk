@@ -218,7 +218,7 @@ func (h *IdTokenHelper) GenToken(ctx context.Context, req oauth.Request, resp oa
 	if tok, err := h.Strategy.NewToken(ctx, req); err != nil {
 		return err
 	} else {
-		resp.Set(RParamIdToken, tok)
+		resp.Set(IdToken, tok)
 	}
 
 	return nil

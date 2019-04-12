@@ -10,7 +10,7 @@ type ImplicitHandler struct {
 }
 
 func (h *ImplicitHandler) Authorize(ctx context.Context, req AuthorizeRequest, resp Response) error {
-	if !h.supportsAuthorizeRequest(req) {
+	if !h.SupportsAuthorizeRequest(req) {
 		return nil
 	}
 
@@ -27,7 +27,7 @@ func (h *ImplicitHandler) Authorize(ctx context.Context, req AuthorizeRequest, r
 	return nil
 }
 
-func (h *ImplicitHandler) supportsAuthorizeRequest(req AuthorizeRequest) bool {
+func (h *ImplicitHandler) SupportsAuthorizeRequest(req AuthorizeRequest) bool {
 	return V(req.GetResponseTypes()).ContainsExactly(spi.ResponseTypeToken)
 }
 

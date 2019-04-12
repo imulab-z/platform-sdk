@@ -141,7 +141,3 @@ func (s *oidcSession) Merge(another oauth.Session) {
 	// todo
 }
 
-func isOidcSession(sess oauth.Session) bool {
-	_, ok := sess.(Session)
-	return ok
-}

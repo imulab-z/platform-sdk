@@ -53,7 +53,7 @@ func (s *ImplicitHandlerTestSuite) TestAuthorize() {
 }
 
 type implicitHandlerTestSuiteRepo struct {
-	*noOpAccessTokenRepo
+	*NoOpAccessTokenRepo
 }
 
 type implicitHandlerTestSuiteClient struct {
