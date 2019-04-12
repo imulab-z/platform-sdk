@@ -40,6 +40,28 @@ const (
 	SubjectTypePairwise = "pairwise"
 )
 
+// response_mode
+const (
+	ResponseModeQuery = "query"
+	ResponseModeFragment = "fragment"
+)
+
+// display
+const (
+	DisplayPage = "page"
+	DisplayPopup = "popup"
+	DisplayTouch = "touch"
+	DisplayWap = "wap"
+)
+
+// prompt
+const (
+	PromptNone = "none"
+	PromptLogin = "login"
+	PromptConsent = "consent"
+	PromptSelectAccount = "select_account"
+)
+
 // signing algorithms
 const (
 	SignAlgHS256 = "HS256"
