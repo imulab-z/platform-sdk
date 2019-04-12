@@ -72,4 +72,3 @@ func FindEncryptionKeyByAlg(jwks *jose.JSONWebKeySet, alg string) *jose.JSONWebK
 	}
 	return nil
 }
-

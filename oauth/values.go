@@ -9,7 +9,7 @@ type Comparator func(a, b string) bool
 
 func (v V) Contains(elements ...string) bool {
 	for _, oneElement := range elements {
-		if !funk.ContainsString(elements, oneElement) {
+		if !funk.ContainsString(v, oneElement) {
 			return false
 		}
 	}

@@ -141,6 +141,11 @@ func ErrServerError(err error) *OAuthError {
 	}
 }
 
+// Convenience function to create server_error with plain message and args.
+func ErrServerErrorf(msg string, args ...interface{}) *OAuthError {
+	return ErrServerError(fmt.Errorf(msg, args...))
+}
+
 // Factory method to create a temporarily_unavailable error.
 // The authorization server is currently unable to handle
 // the request due to a temporary overloading or maintenance
