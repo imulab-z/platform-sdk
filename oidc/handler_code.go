@@ -9,6 +9,7 @@ import (
 
 var (
 	_ oauth.AuthorizeHandler = (*AuthorizeCodeHandler)(nil)
+	_ oauth.TokenHandler = (*AuthorizeCodeHandler)(nil)
 )
 
 // This handler implements oauth.AuthorizeHandler for the OpenID Connect 1.0 addition of the authorization code flow.
@@ -76,6 +77,6 @@ func (h *AuthorizeCodeHandler) checkTokenIssuingPrerequisite(req oauth.TokenRequ
 	return nil
 }
 
-func (h *AuthorizeCodeHandler) SupportsTokenRequest(req TokenRequest) bool {
+func (h *AuthorizeCodeHandler) SupportsTokenRequest(req oauth.TokenRequest) bool {
 	return oauth.V(req.GetGrantTypes()).ContainsExactly(spi.GrantTypeCode)
 }
