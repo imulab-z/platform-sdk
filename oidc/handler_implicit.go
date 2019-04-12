@@ -4,7 +4,10 @@ import (
 	"context"
 	"github.com/imulab-z/platform-sdk/oauth"
 	"github.com/imulab-z/platform-sdk/spi"
-	"github.com/thoas/go-funk"
+)
+
+var (
+	_ oauth.AuthorizeHandler = (*ImplicitHandler)(nil)
 )
 
 type ImplicitHandler struct {
@@ -13,22 +16,50 @@ type ImplicitHandler struct {
 }
 
 func (h *ImplicitHandler) Authorize(ctx context.Context, req oauth.AuthorizeRequest, resp oauth.Response) error {
-	if !h.supportsAuthorizeRequest(req) {
+	if !h.SupportsAuthorizeRequest(req) {
 		return nil
 	}
 
-	// client must be able to use grant_type=implicit
-	if !funk.ContainsString(req.GetClient().GetGrantTypes(), spi.GrantTypeImplicit) {
-		return spi.ErrInvalidGrant("client is incapable of implicit grant.")
+	if err := h.checkAuthorizePrerequisite(req); err != nil {
+		return err
 	}
 
-	// issue access token if necessary
-	if funk.ContainsString(req.GetResponseTypes(), spi.ResponseTypeToken) &&
-		len(resp.GetString(oauth.AccessToken)) == 0 {
-		if err := h.AccessTokenHelper.GenToken(ctx, req, resp); err != nil {
-			return err
-		}
-		req.HandledResponseType(spi.ResponseTypeToken)
+	if err := h.issueAccessTokenIfRequired(ctx, req, resp); err != nil {
+		return err
+	}
+
+	if err := h.issueIdToken(ctx, req, resp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *ImplicitHandler) issueAccessTokenIfRequired(
+	ctx context.Context, req oauth.AuthorizeRequest, resp oauth.Response) error {
+	if len(resp.GetString(oauth.AccessToken)) > 0 {
+		return nil
+	} else if !oauth.V(req.GetResponseTypes()).Contains(spi.ResponseTypeToken) {
+		return nil
+	}
+
+	if !oauth.ClientRegisteredResponseType(req.GetClient(), spi.ResponseTypeToken) {
+		return spi.ErrInvalidGrant("client is incapable of using token response type.")
+	}
+
+	if err := h.AccessTokenHelper.GenToken(ctx, req, resp); err != nil {
+		return err
+	}
+
+	req.HandledResponseType(spi.ResponseTypeToken)
+
+	return nil
+}
+
+func (h *ImplicitHandler) issueIdToken(
+	ctx context.Context, req oauth.AuthorizeRequest, resp oauth.Response) error {
+	if !oauth.ClientRegisteredResponseType(req.GetClient(), spi.ResponseTypeIdToken) {
+		return spi.ErrInvalidGrant("client is incapable of using id_token response type.")
 	}
 
 	if err := h.IdTokenHelper.GenToken(ctx, req, resp); err != nil {
@@ -36,13 +67,25 @@ func (h *ImplicitHandler) Authorize(ctx context.Context, req oauth.AuthorizeRequ
 	}
 
 	req.HandledResponseType(spi.ResponseTypeIdToken)
+
 	return nil
 }
 
-func (h *ImplicitHandler) supportsAuthorizeRequest(req oauth.AuthorizeRequest) bool {
-	return IsOidcSession(req.GetSession()) &&
-		funk.ContainsString(req.GetSession().GetGrantedScopes(), spi.ScopeOpenId) &&
-		(oauth.Exactly(req.GetResponseTypes(), spi.ResponseTypeIdToken) ||
-			oauth.Exactly(req.GetResponseTypes(), spi.ResponseTypeToken, spi.ResponseTypeIdToken))
+func (h *ImplicitHandler) checkAuthorizePrerequisite(req oauth.AuthorizeRequest) error {
+	if !oauth.ClientRegisteredGrantType(req.GetClient(), spi.GrantTypeImplicit) {
+		return spi.ErrInvalidGrant("client is incapable of implicit grant.")
+	}
+
+	return nil
 }
 
+func (h *ImplicitHandler) SupportsAuthorizeRequest(req oauth.AuthorizeRequest) bool {
+	v := oauth.V(req.GetResponseTypes())
+	switch {
+	case v.ContainsExactly(spi.ResponseTypeIdToken),
+		v.ContainsExactly(spi.ResponseTypeToken, spi.ResponseTypeIdToken):
+		return oauth.V(req.GetSession().GetGrantedScopes()).Contains(spi.ScopeOpenId)
+	default:
+		return false
+	}
+}
