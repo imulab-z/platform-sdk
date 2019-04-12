@@ -40,6 +40,7 @@ func (s *RefreshHandlerTestSuite) TestIssueToken() {
 	req.SetId(uuid.NewV4().String())
 	req.SetRedirectUri("http://test.org/callback")
 	req.AddGrantTypes(spi.GrantTypeRefresh)
+	req.GetSession().AddGrantedScopes(spi.ScopeOpenId)
 	req.SetClient(new(refreshHandlerTestSuiteClient))
 
 	resp := oauth.NewResponse()

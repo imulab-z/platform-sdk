@@ -138,6 +138,34 @@ func (s *oidcSession) GetIdTokenClaims() map[string]interface{} {
 }
 
 func (s *oidcSession) Merge(another oauth.Session) {
-	// todo
+	if len(s.Subject) == 0 {
+		s.Subject = another.GetSubject()
+	}
+
+	s.AddGrantedScopes(another.GetGrantedScopes()...)
+
+	for k, v := range another.GetAccessClaims() {
+		s.AccessClaims[k] = v
+	}
+
+	if another, ok := another.(Session); ok {
+		if len(s.ObfSubject) == 0 {
+			s.ObfSubject = another.GetObfuscatedSubject()
+		}
+
+		if s.AuthTime == 0 {
+			s.AuthTime = another.GetAuthTime().Unix()
+		}
+
+		s.AddAcrValues(another.GetAcrValues()...)
+
+		if len(s.Nonce) == 0 {
+			s.Nonce = another.GetNonce()
+		}
+
+		for k, v := range another.GetIdTokenClaims() {
+			s.GetIdTokenClaims()[k] = v
+		}
+	}
 }
 
