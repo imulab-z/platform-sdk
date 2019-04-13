@@ -54,6 +54,18 @@ func (s *ClientSecretJwtAuthenticationTestSuite) TestAuthenticate() {
 			expectError: false,
 		},
 		{
+			name: "correct authentication, but find client the hard way",
+			reqFunc: func() *http.Request {
+				f := url.Values{}
+				f.Set(spi.ParamClientAssertionType, spi.ClientAssertionTypeJwtBearer)
+				f.Set(spi.ParamClientAssertion, s.getSignedJwt("foo", fooSecret))
+				r := httptest.NewRequest(http.MethodPost, "/token", strings.NewReader(f.Encode()))
+				r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+				return r
+			},
+			expectError: false,
+		},
+		{
 			name: "failed authentication",
 			reqFunc: func() *http.Request {
 				f := url.Values{}
