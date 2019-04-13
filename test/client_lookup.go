@@ -10,7 +10,7 @@ type MockClientLookup struct {
 	mock.Mock
 }
 
-func (m *MockClientLookup) FindById(ctx context.Context, id string) (spi.OidcClient, error) {
+func (m *MockClientLookup) FindById(ctx context.Context, id string) (spi.OAuthClient, error) {
 	args := m.Called(id)
 	return args.Get(0).(spi.OidcClient), args.Error(1)
 }

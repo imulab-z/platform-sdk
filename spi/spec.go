@@ -18,47 +18,47 @@ const (
 
 // Standard scopes
 const (
-	ScopeOpenId = "openid"
+	ScopeOpenId        = "openid"
 	ScopeOfflineAccess = "offline_access"
 )
 
 // client_type
 const (
-	ClientTypePublic = "public"
+	ClientTypePublic       = "public"
 	ClientTypeConfidential = "confidential"
 )
 
 // application_type
 const (
-	AppTypeWeb = "web"
+	AppTypeWeb    = "web"
 	AppTypeNative = "native"
 )
 
 // subject_type
 const (
-	SubjectTypePublic = "public"
+	SubjectTypePublic   = "public"
 	SubjectTypePairwise = "pairwise"
 )
 
 // response_mode
 const (
-	ResponseModeQuery = "query"
+	ResponseModeQuery    = "query"
 	ResponseModeFragment = "fragment"
 )
 
 // display
 const (
-	DisplayPage = "page"
+	DisplayPage  = "page"
 	DisplayPopup = "popup"
 	DisplayTouch = "touch"
-	DisplayWap = "wap"
+	DisplayWap   = "wap"
 )
 
 // prompt
 const (
-	PromptNone = "none"
-	PromptLogin = "login"
-	PromptConsent = "consent"
+	PromptNone          = "none"
+	PromptLogin         = "login"
+	PromptConsent       = "consent"
 	PromptSelectAccount = "select_account"
 )
 
@@ -76,7 +76,7 @@ const (
 	SignAlgPS256 = "PS256"
 	SignAlgPS384 = "PS384"
 	SignAlgPS512 = "PS512"
-	SignAlgNone = "none"
+	SignAlgNone  = "none"
 )
 
 // encryption algorithms
@@ -106,26 +106,34 @@ const (
 	EncAlgA128CBCHS256 = "A128CBC-HS256"
 	EncAlgA192CBCHS384 = "A192CBC-HS384"
 	EncAlgA256CBCHS512 = "A256CBC-HS512"
-	EncAlgA128GCM = "A128GCM"
-	EncAlgA192GCM = "A192GCM"
-	EncAlgA256GCM = "A256GCM"
-	EncAlgNone = "none"
+	EncAlgA128GCM      = "A128GCM"
+	EncAlgA192GCM      = "A192GCM"
+	EncAlgA256GCM      = "A256GCM"
+	EncAlgNone         = "none"
 )
 
 // token_endpoint_auth_method
 const (
-	AuthMethodClientSecretPost = "client_secret_post"
+	AuthMethodClientSecretPost  = "client_secret_post"
 	AuthMethodClientSecretBasic = "client_secret_basic"
-	AuthMethodClientSecretJwt = "client_secret_jwt"
-	AuthMethodPrivateKeyJwt = "private_key_jwt"
-	AuthMethodNone = "none"
+	AuthMethodClientSecretJwt   = "client_secret_jwt"
+	AuthMethodPrivateKeyJwt     = "private_key_jwt"
+	AuthMethodNone              = "none"
 )
 
 // Parameters
 const (
-	ParamClientId     = "client_id"
-	ParamResponseType = "response_type"
-	ParamRedirectUri  = "redirect_uri"
-	ParamScope        = "scope"
-	ParamState        = "state"
+	ParamClientId            = "client_id"
+	ParamClientSecret        = "client_secret"
+	ParamClientAssertion     = "client_assertion"
+	ParamClientAssertionType = "client_assertion_type"
+	ParamResponseType        = "response_type"
+	ParamRedirectUri         = "redirect_uri"
+	ParamScope               = "scope"
+	ParamState               = "state"
+)
+
+// Misc
+const (
+	ClientAssertionTypeJwtBearer = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
 )

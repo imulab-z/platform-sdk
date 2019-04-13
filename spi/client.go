@@ -21,6 +21,15 @@ type OAuthClient interface {
 	GetScopes() []string
 }
 
+// Add-on interface for client to implement if it decides to return client secret data (plain, hashed, or encrypted).
+// This is designed as a separate interface to generally discourage implementation to transfer client secret data
+// across network, so that developers that require client secret data will consciously do so by implementing this
+// interface.
+type ClientSecretAware interface {
+	// Returns the client secret in plain, hashed, or encrypted form.
+	GetSecret() string
+}
+
 type OidcClient interface {
 	OAuthClient
 	// application_type
