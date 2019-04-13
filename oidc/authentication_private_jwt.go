@@ -46,6 +46,10 @@ func (a *PrivateKeyJwtAuthentication) Authenticate(ctx context.Context, r *http.
 		return nil, a.failed(err.Error())
 	}
 
+	if err := a.validateJwt(ctx, assertion, client); err != nil {
+		return nil, a.failed(err.Error())
+	}
+
 	return client, nil
 }
 
